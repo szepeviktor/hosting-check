@@ -5,60 +5,30 @@
 ## INSTALL
 #  =======
 #
-# 1. Depends:  apt-get install lftp bind9-host
-# 1. Depends2: apt-get install curl bind9-host
-# 1. Version:  0.3
-# 1. Author:   Viktor Szépe <viktor@szepe.net>
-# 1. Extra:    pip install ansi2html
-# 1. URL:      https://gist.github.com/szepeviktor/0f555ce14e399270fd15
-# 1. files:    hosting-check.sh, php-query.php
-# 1. perms:    chmod +x hosting-check.sh
-# 1. name it:  cp hosting-check.sh hc-SITENAME.sh
-# 1. settings: HC_SITE, HC_FTP_HOST etc.
-# 1. db:       upload wp-config.php from template below
-# 1. start:    ./hc-SITENAME.sh
-
-
-## DB crendetials from /wp-config.php
-#  ==================================
-#
-# define('DB_NAME', '');
-# define('DB_USER', '');
-# define('DB_PASSWORD', '');
-# define('DB_HOST', 'localhost');
-# define('DB_CHARSET', 'utf8');
-# define('DB_COLLATE', '');
-# $table_prefix = 'wp_';
-# define('WPLANG', 'hu_HU');
-
-
-## OUTPUT
-#  ======
-#
-# - HTML with clickable links
-# - a coloured txt file for console
-# - Bash parsable key-value pairs
-
+# Depends:  apt-get install lftp bind9-host
+# Depends2: apt-get install curl bind9-host
+# Extra:    pip install ansi2html
+# Version:  0.1
+# Author:   Viktor Szépe <viktor@szepe.net>
+# URL:      https://github.com/szepeviktor/hosting-check
 
 ## SETTINGS
 #  ========
 #
-## URL
-HC_SITE="SITEURL"
+## URL with trailing slash
+HC_SITE="http://SITE.URL/"
 ## FTP access
-## host, webroot
 HC_FTP_HOST="FTPHOST"
 HC_FTP_WEBROOT="/public_html"
-## username,password
 HC_FTP_U='FTPUSER,FTPASSWORD'
 HC_FTP_ENABLE_TLS="1"
-HC_MAILSERVER_IP="MAIN_SMTP"
+HC_MAILSERVER_IP="MAIN_SMTP_IP"
 HC_TIMEZONE="Europe/Budapest"
 
-#DBG
-[ -r hc-settings ] && . hc-settings
 
-##################
+[ -r .hcrc ] && . .hcrc
+
+#####################
 
 HC_SECRETKEY="$(echo "$RANDOM" | md5sum | cut -d' ' -f1)"
 HC_DOMAIN="$(sed -r 's|^.*[./]([^./]+\.[^./]+).*$|\1|' <<< "$HC_SITE")"
@@ -69,7 +39,7 @@ HC_DIR="hosting-check/"
 HC_UA='Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:24.0) Gecko/20140419 Firefox/24.0 hosting-check/0.3'
 
 HC_CURL="1"
-#which lftp &> /dev/null && HC_CURL="0"
+which lftp &> /dev/null && HC_CURL="0"
 
 error() {
     echo "$(tput sgr0)$(tput bold)$(tput setaf 7)$(tput setab 1)[hosting-check]$(tput sgr0) $*" >&2
