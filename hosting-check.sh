@@ -2,9 +2,6 @@
 
 # Hosting (webspace) checker
 
-## INSTALL
-#  =======
-#
 # Depends:  apt-get install lftp bind9-host
 # Depends2: apt-get install curl bind9-host
 # Extra:    pip install ansi2html
