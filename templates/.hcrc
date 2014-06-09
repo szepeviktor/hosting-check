@@ -1,6 +1,7 @@
 ## URL
 
-HC_SITE="http://www.trailing.slash/"
+# begin with protocol (http://) end with slash ("/")
+HC_SITE="http://SITE.URL/"
 
 ## FTP access
 
