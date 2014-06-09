@@ -493,7 +493,7 @@ mime_type() {
         text/x-component text-htc.htc \
         text/x-vcard text-vcard.vcf \
     )
-#TODO? text-html.html, text-css.css, gif, jpeg, png
+#TODO? text-html.html, text-css.css, image-gif.gif, image-jpeg.jpg, image-png.png
 
     # generate files
     if ! [ -z "$ARG" ]; then
@@ -874,7 +874,7 @@ ftp_destruct() {
             return
         fi
 
-        ## delete files
+        ## delete all files one-by-one
         do_curl "ftp://${HC_FTP_HOST}${HC_FTP_WEBROOT}/${HC_DIR}" "${FILES[@]}" > /dev/null
         if ! [ $? = 0 ]; then
             error "curl: can NOT delete files"
@@ -891,6 +891,7 @@ ftp_destruct() {
         fi
         msg "self destruct OK"
     else
+        # delete .htaccess separately
         if do_ftp "${FTPSSL_COMMAND} cd '${HC_FTP_WEBROOT}'; rm -f '${HC_DIR}.htaccess'; rm -r '${HC_DIR}'; exit"; then
             msg "self destruct OK"
         else

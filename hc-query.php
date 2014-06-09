@@ -5,7 +5,8 @@
  * v0.3
  */
 
-// not in PHP 5.2 namespace HostingCheck;
+// not in PHP 5.2
+//namespace HostingCheck;
 
 
 define('LOGDIRNAME', 'log');
