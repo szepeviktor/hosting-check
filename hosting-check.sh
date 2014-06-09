@@ -25,16 +25,15 @@ HC_TIMEZONE="Europe/Budapest"
 
 [ -r .hcrc ] && . .hcrc
 
-#####################
+#######################
 
 HC_SECRETKEY="$(echo "$RANDOM" | md5sum | cut -d' ' -f1)"
 HC_DOMAIN="$(sed -r 's|^.*[./]([^./]+\.[^./]+).*$|\1|' <<< "$HC_SITE")"
-## no URL path support HC_HOST="$(sed -r 's|^.*/([^/]+)/*$|\1|' <<< "$HC_SITE")"
 HC_HOST="$(sed -r 's|^(([a-z]+:)?//)?([a-z0-9.-]+)/.*$|\3|' <<< "$HC_SITE")"
 HC_LOG="hc_${HC_HOST//[^a-z]}.vars.log"
 HC_DIR="hosting-check/"
 HC_UA='Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:24.0) Gecko/20140419 Firefox/24.0 hosting-check/0.3'
-
+## curl or lftp
 HC_CURL="1"
 which lftp &> /dev/null && HC_CURL="0"
 
@@ -49,6 +48,10 @@ fatal() {
 
 msg() {
     echo "$(tput sgr0)$(tput dim)$(tput setaf 0)$(tput setab 2)[hosting-check]$(tput sgr0) $*"
+}
+
+codeblock() {
+    echo "$(tput sgr0)$(tput bold)$(tput setaf 0)$(tput setab 7)$*$(tput sgr0)"
 }
 
 notice() {
@@ -288,7 +291,7 @@ dns_servers() {
 
     ## compare first two octets
     if [ "${NS1%.*.*}" = "${NS2%.*.*}" ]; then
-        error "nameservers are in the same data center"
+        error "nameservers are in the SAME data center"
     else
         msg "nameservers OK"
     fi
@@ -489,6 +492,7 @@ mime_type() {
         text/x-component text-htc.htc \
         text/x-vcard text-vcard.vcf \
     )
+#TODO? text-html.html, text-css.css, gif, jpeg, png
 
     # generate files
     if ! [ -z "$ARG" ]; then
@@ -741,7 +745,7 @@ php_logfile() {
     else
         msg "error reporting OK ()"
         notice "copy this snippet to wp-config.php:"
-        notice "$LOGFILE"
+        codeblock "$LOGFILE"
     fi
 }
 
@@ -952,6 +956,12 @@ manual() {
     ## tips from  woorank.com + webcheck.me etc.
 }
 
+## a dirty hack
+detect_success() {
+    tail -n 2 "${HC_LOG}" | grep -q "^## --END-- ##" \
+        || fatal "fatal error occurred"
+}
+
 ## convert console output to colored HTML
 tohtml() {
     which ansi2html &> /dev/null || return
@@ -966,19 +976,6 @@ tohtml() {
 
 ## this { ... } is needed for capturing the output
 {
-#TODO detect fatal() exit 11
-
-#TODO lftp -> curl
-#     ============
-#
-# - 3 SSL test
-# - mkdir + mput
-# - rmdir
-
-
-
-
-
     ## site URL
     siteurl
 
@@ -1014,7 +1011,7 @@ tohtml() {
     php_timezone
     php_mysqli
     php_logfile
-#TODO disk seq.r/w, disk access - php create 200MB file ?quota
+#TODO disk seq.r/w, disk access - php create 100MB files ?quota
 #TODO php benchmark - CPU limit
 #TODO mysqli benchmark
 #TODO concurrent connections - ab -c X -n Y
@@ -1031,6 +1028,8 @@ tohtml() {
     ## END of log
     log_end
 } 2>&1 | tee "${HC_LOG}.txt"
+
+detect_success
 
 ## nice HTML output
 tohtml
