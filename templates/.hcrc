@@ -10,9 +10,12 @@ HC_FTP_WEBROOT="/public_html"
 
 # username "," password
 HC_FTP_U='musthave,comma'
+
 # enable TLS detection in FTP connection
 HC_FTP_ENABLE_TLS="1"
+
 # IP of another mailserver you use
 HC_MAILSERVER_IP="3.4.5.6"
+
 # local time zone for PHP
 HC_TIMEZONE="Europe/Budapest"
