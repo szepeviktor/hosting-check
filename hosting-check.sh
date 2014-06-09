@@ -141,9 +141,9 @@ HTACCESS
     mime_type "${UNPACKDIR}/${HC_DIR}"
 
     # PHP query
-    if ! cp ./php-query.php "${UNPACKDIR}/${HC_DIR}php-query.php"; then
+    if ! cp ./hc-query.php "${UNPACKDIR}/${HC_DIR}hc-query.php"; then
         rm -r "$UNPACKDIR"
-        fatal "please download php-query.php also"
+        fatal "please download hc-query.php also"
     fi
 
     # return temp dir
@@ -169,7 +169,7 @@ wget_def(){
 php_query() {
     local QUERY="$1"
 
-    wget_def -qO- "${HC_SITE}${HC_DIR}php-query.php?q=${QUERY}"
+    wget_def -qO- "${HC_SITE}${HC_DIR}hc-query.php?q=${QUERY}"
 }
 
 dnsquery() {
