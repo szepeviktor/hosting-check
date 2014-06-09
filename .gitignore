@@ -2,3 +2,6 @@
 *.vars.log
 *.vars.log.txt
 *.vars.log.html
+
+# rc
+.hcrc

@@ -245,6 +245,7 @@ dnsquery() {
 
 ## site URL
 siteurl() {
+    [ "$HC_SITE" = "http://SITE.URL/" ] && fatal "please fill in the SETTINGS"
     msg "site URL: ${HC_SITE}"
     log_vars "SITEURL" "$HC_SITE"
 }
@@ -958,12 +959,15 @@ manual() {
 
 ## a dirty hack
 detect_success() {
+    [ -r "${HC_LOG}" ] || return
+
     tail -n 2 "${HC_LOG}" | grep -q "^## --END-- ##" \
         || fatal "fatal error occurred"
 }
 
 ## convert console output to colored HTML
 tohtml() {
+    [ -r "${HC_LOG}" ] || return
     which ansi2html &> /dev/null || return
 
     cat "${HC_LOG}.txt" \
@@ -1027,6 +1031,8 @@ tohtml() {
 
     ## END of log
     log_end
+
+# duplicate to console
 } 2>&1 | tee "${HC_LOG}.txt"
 
 detect_success
