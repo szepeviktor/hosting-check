@@ -1,0 +1,4 @@
+# output files
+*.vars.log
+*.vars.log.txt
+*.vars.log.html
