@@ -245,7 +245,9 @@ dnsquery() {
 
 ## site URL
 siteurl() {
-    [ "$HC_SITE" = "http://SITE.URL/" ] && fatal "please fill in the SETTINGS"
+    [ "$HC_SITE" = "http://SITE.URL/" ] && fatal "please fill in the SETTINGS / HC_SITE"
+    [ "$HC_FTP_HOST" = "FTPHOST" ] && fatal "please fill in the SETTINGS / HC_FTP_HOST"
+    [ "$HC_FTP_USERPASS" = "FTPUSER,FTPASSWORD" ] && fatal "please fill in the SETTINGS / HC_FTP_USERPASS"
     msg "site URL: ${HC_SITE}"
     log_vars "SITEURL" "$HC_SITE"
 }
