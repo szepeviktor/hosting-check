@@ -10,7 +10,7 @@ HC_FTP_HOST="s10.hosting.prov"
 HC_FTP_WEBROOT="/public_html"
 
 # username "," password
-HC_FTP_U='musthave,comma'
+HC_FTP_USERPASS='musthave,comma'
 
 # enable TLS detection in FTP connection
 HC_FTP_ENABLE_TLS="1"
