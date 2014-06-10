@@ -5,6 +5,7 @@ Hosting (webspace) checker
 
 
 You are more than welcome to test drive this script and attach the output in an [issue](https://github.com/szepeviktor/hosting-check/issues/new).
+This script runs on a server/vps and checks any FTP/PHP/MySQL webspace.
 
 ## Installation
 
@@ -13,7 +14,7 @@ You are more than welcome to test drive this script and attach the output in an 
 1. rc file:  `cp templates/.hcrc .`
 1. settings: `nano .hcrc`
 1. db:       have WordPress installed or fill in and upload `templates/wp-config.php` to webroot
-1. start:    `./hosting-check.sh`
+1. start:    `./hosting-check.sh` in your shell
 
 ## Output
 
