@@ -451,6 +451,8 @@ webserver() {
     APACHE_MODS="$(php_query apachemods)"
     if [ -z "$APACHE_MODS" ]; then
         error "Apache webserver but NO Apache modules"
+    elif [ "$APACHE_MODS" = 0 ]; then
+        notice "Apache module listing is disabled"
     else
         msg "Apache modules: ${APACHE_MODS}"
     fi
