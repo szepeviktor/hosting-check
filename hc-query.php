@@ -2,7 +2,7 @@
 
 /**
  * Hosting (webspace) checker PHP query class + main
- * v0.3
+ * v0.2
  */
 
 // not in PHP 5.2

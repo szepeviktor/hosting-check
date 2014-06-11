@@ -5,7 +5,7 @@
 # Depends:  apt-get install lftp bind9-host
 # Depends2: apt-get install curl bind9-host
 # Extra:    pip install ansi2html
-# Version:  0.1
+# Version:  0.2
 # Author:   Viktor Szépe <viktor@szepe.net>
 # URL:      https://github.com/szepeviktor/hosting-check
 
@@ -34,7 +34,7 @@ HC_DOMAIN="$(sed -r 's|^.*[./]([^./]+\.[^./]+).*$|\1|' <<< "$HC_SITE")"
 HC_HOST="$(sed -r 's|^(([a-z]+:)?//)?([a-z0-9.-]+)/.*$|\3|' <<< "$HC_SITE")"
 HC_LOG="hc_${HC_HOST//[^a-z]}.vars.log"
 HC_DIR="hosting-check/"
-HC_UA='Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:24.0) Gecko/20140419 Firefox/24.0 hosting-check/0.3'
+HC_UA='Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:24.0) Gecko/20140419 Firefox/24.0 hosting-check/0.2'
 HC_CABUNDLE="/etc/ssl/certs/ca-certificates.crt"
 ## curl or lftp
 HC_CURL="1"
