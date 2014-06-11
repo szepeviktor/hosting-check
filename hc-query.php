@@ -98,6 +98,10 @@ public function sapi() {
 }
 
 public function apachemods() {
+    if (! function_exists('apache_get_modules')) {
+        return '0';
+    }
+
     $modules = apache_get_modules();
 
     return implode(',', $modules);
@@ -197,6 +201,20 @@ public function logfile() {
     if (empty($docroot)) {
         return '0';
     }
+
+    // is it an alias?
+    if (isset($_SERVER['DOCUMENT_ROOT'])
+        && isset($_SERVER['SCRIPT_FILENAME'])
+        && strpos($_SERVER['SCRIPT_FILENAME'], $_SERVER['DOCUMENT_ROOT']) !== 0) {
+
+        // 'hosting-check' . '/hc-query.php'
+        $me = basename(dirname($_SERVER['SCRIPT_FILENAME'])) . '/hc-query.php';
+        // ends with
+        if (substr($_SERVER['SCRIPT_FILENAME'], -strlen($me)) === $me) {
+            $docroot = substr($_SERVER['SCRIPT_FILENAME'], 0, -strlen($me));
+        }
+    }
+
     $docroot = rtrim($docroot, '/');
 
     // above webroot
@@ -263,6 +281,7 @@ public function http() {
 /** main **/
 
 // hide errors
+//error_reporting(E_ALL|E_STRICT);
 error_reporting(0);
 
 $phpq = new Query;

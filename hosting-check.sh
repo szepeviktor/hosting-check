@@ -33,6 +33,7 @@ HC_HOST="$(sed -r 's|^(([a-z]+:)?//)?([a-z0-9.-]+)/.*$|\3|' <<< "$HC_SITE")"
 HC_LOG="hc_${HC_HOST//[^a-z]}.vars.log"
 HC_DIR="hosting-check/"
 HC_UA='Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:24.0) Gecko/20140419 Firefox/24.0 hosting-check/0.3'
+HC_CABUNDLE="/etc/ssl/certs/ca-certificates.crt"
 ## curl or lftp
 HC_CURL="1"
 which lftp &> /dev/null && HC_CURL="0"
@@ -65,8 +66,10 @@ do_ftp() {
 }
 
 do_curl() {
+    [ -r "$HC_CABUNDLE" ] || fatal "can NOT find certificate authority bundle (${HC_CABUNDLE})"
+
     #echo "[DBG] curl -v --user '${HC_FTP_USERPASS/,/:}' $*" >&2
-    curl -sS --cacert /etc/ssl/certs/ca-certificates.crt --connect-timeout 5 --retry 1 --retry-delay 2 \
+    curl -sS --cacert "$HC_CABUNDLE" --connect-timeout 5 --retry 1 --retry-delay 2 \
         --user "${HC_FTP_USERPASS/,/:}" "$@"
 }
 
@@ -236,6 +239,17 @@ dnsquery() {
         # not found
         return 4
     fi
+}
+
+## check SSL certificate with openssl
+## usage: ssl_check "service_name" "port_number" "additional_arguments"
+ssl_check() {
+    local SSL_NAME="$1"
+    local SSL_PORT="$2"
+    local SSL_ARGS="$3"
+    local NOCERT_REGEX='[A-Za-z0-9+/=]\{64\}'
+
+    notice "${SSL_NAME}:  echo QUIT|openssl s_client -CAfile '${HC_CABUNDLE}' -connect ${HC_FTP_HOST}:${SSL_PORT} ${SSL_ARGS}|grep -v '${NOCERT_REGEX}'"
 }
 
 
@@ -771,6 +785,8 @@ ftp_ssl() {
         log_vars "FTPSSL" "$FTPSSL"
         log_vars "FTPSSLCOMMAND" "$FTPSSL_COMMAND"
         notice "curl: FTP SSL connect level (${FTPSSL})"
+#FIXME lftp fails to validate a valid cert
+        ssl_check "FTPS" "21" "-starttls ftp"
         return
     fi
 
@@ -793,6 +809,7 @@ ftp_ssl() {
         msg "FTP connect with invalid SSL cert OK"
     else
         notice "FTP can NOT connect with invalid SSL cert"
+        ssl_check "FTPS" "21" "-starttls ftp"
     fi
 
     ## SSL with valid certificate
@@ -803,6 +820,7 @@ ftp_ssl() {
         msg "FTP connect with SSL OK"
     else
         notice "FTP can NOT connect with SSL"
+        ssl_check "FTPS" "21" "-starttls ftp"
     fi
 
     if [ -z "$FTPSSL" ]; then
@@ -873,6 +891,7 @@ ftp_destruct() {
         if ! [ $? = 0 ]; then
             error "curl: can NOT get file list"
             error "self distruct failed, DELETE '${HC_DIR}' MANUALLY!"
+            notice "curl --user '${HC_FTP_USERPASS/,/:}' 'ftp://${HC_FTP_HOST}${HC_FTP_WEBROOT}/'"
             return
         fi
 
@@ -881,6 +900,7 @@ ftp_destruct() {
         if ! [ $? = 0 ]; then
             error "curl: can NOT delete files"
             error "self distruct failed, DELETE '${HC_DIR}' MANUALLY!"
+            notice "curl --user '${HC_FTP_USERPASS/,/:}' 'ftp://${HC_FTP_HOST}${HC_FTP_WEBROOT}/'"
             return
         fi
 
@@ -889,6 +909,7 @@ ftp_destruct() {
         if ! [ $? = 0 ]; then
             error "curl: can NOT delete ${HC_DIR} dir"
             error "self distruct failed, DELETE '${HC_DIR}' MANUALLY!"
+            notice "curl --user '${HC_FTP_USERPASS/,/:}' 'ftp://${HC_FTP_HOST}${HC_FTP_WEBROOT}/'"
             return
         fi
         msg "self destruct OK"
@@ -905,15 +926,13 @@ ftp_destruct() {
 
 # todos
 manual() {
-    local NOCERT_REGEX='[A-Za-z0-9+/=]\{64\}'
-
     if ! [ -z "$HC_MX" ]; then
-        notice "SMTPS:  echo QUIT|openssl s_client -connect ${HC_MX}:465 | grep -v '${NOCERT_REGEX}'"
-        notice "IMAPS:  echo QUIT|openssl s_client -connect ${HC_MX}:993 | grep -v '${NOCERT_REGEX}'"
-        notice "POP3S:  echo QUIT|openssl s_client -connect ${HC_MX}:995 | grep -v '${NOCERT_REGEX}'"
-        notice "SMTP-TLS: echo QUIT|openssl s_client -connect ${HC_MX}:25 -starttls smtp | grep -v '${NOCERT_REGEX}'"
-        notice "IMAP-TLS: echo QUIT|openssl s_client -connect ${HC_MX}:143 -starttls imap | grep -v '${NOCERT_REGEX}'"
-        notice "POP3-TLS: echo QUIT|openssl s_client -connect ${HC_MX}:110 -starttls pop3 | grep -v '${NOCERT_REGEX}'"
+        ssl_check "SMTPS" "465"
+        ssl_check "IMAPS" "993"
+        ssl_check "POP3S" "995"
+        ssl_check "SMTP-TLS" "25" "-starttls smtp"
+        ssl_check "IMAP-TLS" "143" "-starttls imap"
+        ssl_check "POP3-TLS" "110" "-starttls pop3"
     fi
 
     ## email
