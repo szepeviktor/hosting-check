@@ -17,7 +17,8 @@ HC_SITE="http://SITE.URL/"
 ## FTP access
 HC_FTP_HOST="FTPHOST"
 HC_FTP_WEBROOT="/public_html"
-HC_FTP_USERPASS='FTPUSER,FTPASSWORD'
+HC_FTP_USER="FTPUSER"
+HC_FTP_PASSWORD='FTPPASSWORD'
 HC_FTP_ENABLE_TLS="1"
 HC_MAILSERVER_IP="MAIN_SMTP_IP"
 HC_TIMEZONE="Europe/Budapest"
@@ -27,6 +28,7 @@ HC_TIMEZONE="Europe/Budapest"
 
 #######################
 
+HC_FTP_USERPASS="${HC_FTP_USER},${HC_FTP_PASSWORD}"
 HC_SECRETKEY="$(echo "$RANDOM" | md5sum | cut -d' ' -f1)"
 HC_DOMAIN="$(sed -r 's|^.*[./]([^./]+\.[^./]+).*$|\1|' <<< "$HC_SITE")"
 HC_HOST="$(sed -r 's|^(([a-z]+:)?//)?([a-z0-9.-]+)/.*$|\3|' <<< "$HC_SITE")"
@@ -261,7 +263,7 @@ ssl_check() {
 siteurl() {
     [ "$HC_SITE" = "http://SITE.URL/" ] && fatal "please fill in the SETTINGS / HC_SITE"
     [ "$HC_FTP_HOST" = "FTPHOST" ] && fatal "please fill in the SETTINGS / HC_FTP_HOST"
-    [ "$HC_FTP_USERPASS" = "FTPUSER,FTPASSWORD" ] && fatal "please fill in the SETTINGS / HC_FTP_USERPASS"
+    [ "$HC_FTP_USERPASS" = "FTPUSER,FTPPASSWORD" ] && fatal "please fill in the SETTINGS / HC_FTP_USERPASS"
     msg "site URL: ${HC_SITE}"
     log_vars "SITEURL" "$HC_SITE"
 }
@@ -850,10 +852,24 @@ ftp_upload() {
         || fatal "secret key insertion failure"
 
     if [ "$HC_CURL" = 1 ]; then
+        # wp-config.php
+        if [ -r ./wp-config.php ]; then
+            if ! do_curl -T "{./wp-config.php}" "ftp://${HC_FTP_HOST}${HC_FTP_WEBROOT}/wp-config.php"; then
+                fatal "wp-config.php upload failure"
+            fi
+        fi
+
         FILELIST="$(find "${UNPACKDIR}/${HC_DIR}" -type f -printf "%p,")"
         do_curl --ftp-create-dirs -T "{${FILELIST%,}}" "ftp://${HC_FTP_HOST}${HC_FTP_WEBROOT}/${HC_DIR}"
         RET="$?"
     else
+        # wp-config.php
+        if [ -r ./wp-config.php ]; then
+            if ! do_ftp "${FTPSSL_COMMAND} cd '${HC_FTP_WEBROOT}'; put ./wp-config.php; exit"; then
+                fatal "wp-config.php upload failure"
+            fi
+        fi
+
         do_ftp "${FTPSSL_COMMAND} cd '${HC_FTP_WEBROOT}'; mirror -R '${UNPACKDIR}/' .; exit"
         RET="$?"
     fi
@@ -943,13 +959,14 @@ manual() {
     notice "set up email:  abuse@ postmaster@ webmaster@ spam@ hostmaster@ admin@"
 
     ## sql
-    notice "set up phpmyadmin-cli: https://github.com/fdev/phpmyadmin-cli"
+    notice "set up phpmyadmin-cli:  https://github.com/fdev/phpmyadmin-cli"
     notice "check MySQL table engine:  SHOW ENGINES;"
-    notice "remote pma:  phpmyadmin-cli -l PMA_URL --password=DB_PASSWORD -u DB_USER -e 'SHOW ENGINES;' DB_NAME |tail -n +2|csvtool cat -u TAB -|cut -f1"
+    notice "phpmyadmin-cli -l PMA_URL --password=DB_PASSWORD -u DB_USER -e 'SHOW ENGINES;' DB_NAME|tail -n+2|csvtool cat -u TAB -|cut -f1"
 
     ## web
     notice "certificate check: https://www.ssllabs.com/ssltest/analyze.html?d=${HC_HOST}&s=${HC_IP}"
     notice "W3C validator:  http://validator.w3.org/check?group=1&uri=${HC_SITE}"
+    notice "check Latin Extended-A characters: font files, webfonts (őűŐŰ€)"
     notice "waterfall:  https://www.webpagetest.org/"
     notice "emulate mod_pagespeed:  https://www.webpagetest.org/compare"
     notice "PageSpeed:  http://developers.google.com/speed/pagespeed/insights/?url=${HC_SITE}"
@@ -957,12 +974,11 @@ manual() {
     notice "check included Javascripts"
     notice "Javascript errors (slimerjs), 404s (slimerjs/gositemap.sh)"
     notice "minify CSS, JS, optimize images (progressive JPEGs)"
-    notice "set up page cache"
-    notice "check Latin Extended-A characters: font files, webfonts (őűŐŰ€)"
     notice "set up WMT:  https://www.google.com/webmasters/tools/home?hl=en"
-    notice "set up analytics:  https://www.google.com/analytics/web/?hl=en&pli=1"
-    notice "check main keyword Google SERP snippet:  https://www.google.hu/search?hl=hu&q=site:${HC_SITE}"
+    notice "set up Google Analytics:  https://www.google.com/analytics/web/?hl=en&pli=1"
     notice "Google Analytics/Universal Analytics: js, demographics, goals, Remarketing Tag"
+    notice "set up page cache"
+    notice "check main keyword Google SERP snippet:  https://www.google.hu/search?hl=hu&q=site:${HC_SITE}"
 
     ## monitoring
     notice "no ISP cron, remote WP-cron:  8,38 * * * *  www-data  /usr/bin/wget -qO- ${HC_SITE}wp-cron.php"

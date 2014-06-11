@@ -1,98 +1,138 @@
 #!/bin/bash
 
-#TODO: read everything from templates
+trim() {
+    #  http://www.cyberciti.biz/faq/bash-remove-whitespace-from-string/
+    local OUTPUT="$1"
 
-read_value() {
-    local VARIABLE="$1"
-    local DEFAULT_VALUE="$2"
-    local VALUE_NAME="$3"
-    local MESSAGE="$4"
-    local VALUE_PROMPT="$(tput sgr0)$(tput dim)$(tput setaf 0)$(tput setab 3)${VALUE_NAME}$(tput sgr0): "
+    ### trim leading whitespaces
+    OUTPUT="${OUTPUT##*([[:blank:]])}"
 
-    echo "$MESSAGE"
-
-    # write only
-    if [ -z "$VALUE_NAME" ]; then
-        VALUE="$DEFAULT_VALUE"
-    else
-        read -p "$VALUE_PROMPT" -e -i "$DEFAULT_VALUE" VALUE
-    fi
-
-    # read only
-    if ! [ -z "$VARIABLE" ]; then
-        echo "${VARIABLE}=\"${VALUE}\"" >> "$CONFIG_FILE"
-    fi
+    ### trim trailing whitespaces
+    echo "${OUTPUT%%*([[:blank:]])}"
 }
 
-read_db_value() {
-    local VARIABLE="$1"
-    local DEFAULT_VALUE="$2"
-    local VALUE_NAME="$3"
-    local MESSAGE="$4"
-    local VALUE_PROMPT="$(tput sgr0)$(tput dim)$(tput setaf 0)$(tput setab 2)${VALUE_NAME}$(tput sgr0): "
-
-    echo "$MESSAGE"
-
-    read -p "$VALUE_PROMPT" -e -i "$DEFAULT_VALUE" VALUE
-
-    # hard coded
-    if [ "$VARIABLE" = table_prefix ]; then
-        echo "\$table_prefix = '${VALUE}';" >> "$CONFIG_FILE"
-    else
-        echo "define('${VARIABLE}', '${VALUE}');" >> "$CONFIG_FILE"
-    fi
+error() {
+    echo "$(tput sgr0)$(tput bold)$(tput setaf 7)$(tput setab 1)[hosting-check]$(tput sgr0) $*" >&2
 }
 
-echo 'Please enter FTP and other SETTINGS'
-CONFIG_FILE="./.hcrc"
-echo -n > "$CONFIG_FILE"
+msg() {
+    echo "$(tput sgr0)$(tput dim)$(tput setaf 0)$(tput setab 2)[hosting-check]$(tput sgr0) $*"
+}
 
-read_value "HC_SITE" "" "Site URL" 'Site URL begins with protocol (http://) end with a slash ("/")'
-#FIXME validation/grep -E 'https?://.*/$'
+title() {
+    local TITLE="$1"
 
-HC_FTP_HOST="$(sed -r 's|^(([a-z]+:)?//)?([a-z0-9.-]+)/.*$|\3|' <<< "$VALUE")"
-read_value "HC_FTP_HOST" "$HC_FTP_HOST" "FTP hostname" 'Host name of the FTP server'
-#grep '^[a-zA-Z0-9-.]\{5,50\}$'
+    echo
+    echo "$TITLE"
+    for (( i=0; i < ${#TITLE}; i++ )); do
+        echo -n "="
+    done
+    echo
+}
 
-read_value "" "" "FTP username" 'Enter the FTP user name'
-#grep '^.\{1,50\}$'
-HC_FTP_USER="$VALUE"
-read_value "" "" "FTP password" 'Enter the FTP password'
-#grep '^.\{5,50\}$'
-HC_FTP_PASS="$VALUE"
-read_value "HC_FTP_USERPASS" "${HC_FTP_USER},${HC_FTP_PASS}" ""
+strip_hash() {
+    local STRING="$1"
+    sed -r 's/^(\/\/)?#\s+//' <<< "$STRING"
+}
 
-read_value "HC_FTP_ENABLE_TLS" "1" "FTP TLS detection" 'Enter "1" to enable TLS detection in FTP connections, "0" to disable'
-#grep '^0$|^1$'
-read_value "HC_FTP_WEBROOT" "/public_html" "Document root" 'Relative webroot directory should begin with "/"'
-#grep '^/.*$'
-HC_FTP_WEBROOT="$VALUE"
-read_value "HC_MAILSERVER_IP" "" "Main mailserver" "IP address of the mailserver you use besides the hosting's one"
-#grep '^\([0-9]\{1,3\}\.\)\{3\}[0-9]\{1,3\}$'
-read_value "HC_TIMEZONE" "Europe/Budapest" "Time zone" 'Local time zone for PHP'
-#grep '^[A-Z][a-zA-Z_]*/[A-Z][a-zA-Z_]*$'
+reset_file() {
+    local FILE="$1"
+    echo -n > "$FILE"
+}
 
-echo 'Please enter MySQL database credentials'
-echo 'http://codex.wordpress.org/Editing_wp-config.php'
-CONFIG_FILE="./wp-config.php"
-echo -n > "$CONFIG_FILE"
+process_template() {
+    local TEMPLATE="$1"
+    local CONFIG_FILE="$2"
+    local PROMPT_COLOR="$3"
+    local VALUE_PROMPT="$(tput sgr0)$(tput dim)$(tput setaf 0)$(tput setab ${PROMPT_COLOR})%s$(tput sgr0): "
+    local Variable
+    local Default
+    local Name
+    local Description
+    local Validator
+    local Output
+    local VALUE
 
-read_db_value "DB_NAME" "" "MySQL database name" 'Name of database belonging to the site'
-#grep '^.\{1,50\}$'
-read_db_value "DB_USER" "" "MySQL user name" 'Name of the database user having access to the database'
-#grep '^.\{1,50\}$'
-read_db_value "DB_PASSWORD" "" "MySQL password" 'Use a complex and long enough password'
-#grep '^.\{5,50\}$'
-read_db_value "DB_HOST" "localhost" "MySQL server's host name" 'Database server host name is usually "localhost"'
-#grep '^.\{1,50\}$'
-read_db_value "DB_CHARSET" "utf8" "MySQL character set" 'Character set should be "utf8"'
-#grep '^.\{4,50\}$'
-read_db_value "DB_COLLATE" "" "MySQL connection collation" 'Database connection collation could be empty'
-#grep '^.*$'
-read_db_value "table_prefix" "wp_" "WordPress table prefix" 'The table prefix should NOT be "wp_"'
-#grep '^.\+_$'
-read_db_value "WPLANG" "hu_HU" "WordPress language" 'List of WordPress languages:  http://wpcentral.io/internationalization/'
-#grep '^[a-z]\{2\}_[A-Z]\{2\}$'
+    [ -r "$TEMPALTE" ] && return 1
+    reset_file "$CONFIG_FILE"
 
-#TODO auto upload
-echo "Now upload your wp-config.php to the webroot (${HC_FTP_WEBROOT}) directory, or above it"
+    while read -r LINE <&3; do
+        LINE="$(strip_hash "$LINE")"
+
+        case "${LINE%%=*}" in
+            Variable|Default|Name|Description|Validator|Output)
+                eval "$LINE"
+                ;;
+            *)
+                continue
+                ;;
+        esac
+
+        # got Output, start rendering
+        if ! [ -z "$Variable" ] \
+            && ! [ -z "$Validator" ] \
+            && ! [ -z "$Output" ]; then
+
+            echo "$Description"
+
+            unset VALUE
+            while : ; do
+                read -p "$(printf "$VALUE_PROMPT" "$Name")" -e -i "$Default" VALUE
+                VALUE="$(trim "$VALUE")"
+
+                if grep -q "$Validator" <<< "$VALUE"; then
+                    break
+                else
+                    error "Validation error ($VALUE)"
+                fi
+            done
+
+            # append to config file
+            printf "$Output\n" "${Variable}" "${VALUE}" >> "$CONFIG_FILE"
+
+            unset Variable
+            unset Validator
+            unset Output
+        fi
+    done 3< "$TEMPLATE"
+
+    return 0
+}
+
+continue_db() {
+    local QUESTION="$1"
+
+    while : ; do
+        read -p "$(tput sgr0)$(tput dim)$(tput setaf 0)$(tput setab 6)${QUESTION}$(tput sgr0) " \
+            -e -i "y" ANSWER
+        if grep -q '^y$\|^n$' <<< "$ANSWER"; then
+            break
+        else
+            error "Validation error ($ANSWER)"
+        fi
+    done
+
+    [ "$ANSWER" = n ] && exit 0
+}
+
+## example template entry
+## "$VALUE" contains the previously entered value
+
+# Variable="HC_FTP_HOST"
+# Default="$(sed -r 's|^(([a-z]+:)?//)?([a-z0-9.-]+)/.*$|\3|' <<< "$VALUE")"
+# Name='Site URL'
+# Description='Host name of the FTP server'
+# Validator='^[a-zA-Z0-9-.]\{13,50\}$'
+# Output='%s="%s"'
+#
+
+title 'Please enter FTP and other SETTINGS'
+process_template "templates/.hcrc" "./.hcrc" 3
+msg "Configuration file (.hcrc) generated OK."
+
+continue_db "Continue with Database credentials? [Y/N]"
+
+title 'Please enter MySQL database credentials  http://codex.wordpress.org/Editing_wp-config.php'
+process_template "templates/wp-config.php" "./wp-config.php" 6
+msg "Database configuration file (wp-config.php) generated OK."
+msg "Generated wp-config.php will be uploaded to the webroot directory."

@@ -1,22 +1,80 @@
+# Variable=HC_SITE
+# Default=""
+# Name='Site URL'
+# Description='Site URL begins with protocol (http://) end with a slash ("/")'
+# Validator='^https\{0,1\}://.*/$'
+# Output='%s="%s"'
+#
 ## URL
-
-# begin with protocol (http://) end with slash ("/")
+## begin with protocol (http://) end with slash ("/")
 HC_SITE="http://SITE.URL/"
 
+# Variable=HC_FTP_HOST
+# Default="$(sed -r 's|^(([a-z]+:)?//)?([a-z0-9.-]+)/.*$|\3|' <<< "$VALUE")"
+# Name='FTP hostname'
+# Description='Host name of the FTP server'
+# Validator='^[a-zA-Z0-9.-]\{5,50\}$'
+# Output='%s="%s"'
+#
 ## FTP access
-
-# host, webroot
 HC_FTP_HOST="s10.hosting.prov"
-HC_FTP_WEBROOT="/public_html"
 
-# username "," password
-HC_FTP_USERPASS='musthave,comma'
+# Variable="HC_FTP_USER"
+# Default=""
+# Name="FTP username"
+# Description='Enter the FTP user name'
+# Validator='^.\{1,50\}$'
+# Output='%s="%s"'
+#
+## FTP user name
+HC_FTP_USER="ftp_username"
 
-# enable TLS detection in FTP connection
+# Variable="HC_FTP_PASSWORD"
+# Default=""
+# Name="FTP password"
+# Description='Enter the FTP password'
+# Validator='^.\{5,50\}$'
+# Output='%s="%s"'
+#
+## FTP password
+HC_FTP_PASSWORD='ftp_password'
+
+# Variable="HC_FTP_ENABLE_TLS"
+# Default="1"
+# Name="FTP TLS detection"
+# Description='Enter "1" to enable TLS detection in FTP connections, "0" to disable'
+# Validator='^0$\|^1$'
+# Output='%s="%d"'
+#
+## enable TLS detection in FTP connection
 HC_FTP_ENABLE_TLS="1"
 
-# IP of another mailserver you use
-HC_MAILSERVER_IP="3.4.5.6"
+# Variable="HC_FTP_WEBROOT"
+# Default="/public_html"
+# Name="Document root"
+# Description='Relative webroot directory should begin with "/"'
+# Validator='^/'
+# Output='%s="%s"'
+#
+## document root (webroot)
+HC_FTP_WEBROOT="/public_html"
 
-# local time zone for PHP
+# Variable="HC_MAILSERVER_IP"
+# Default=""
+# Name="Main mailserver"
+# Description="IP address of the mailserver you use besides the hosting's one"
+# Validator='^\([0-9]\{1,3\}\.\)\{3\}[0-9]\{1,3\}$'
+# Output='%s="%s"'
+#
+## IP of another mailserver you use
+HC_MAILSERVER_IP=""
+
+# Variable="HC_TIMEZONE"
+# Default="Europe/Budapest"
+# Name="Time zone"
+# Description='Local time zone for PHP'
+# Validator='^[A-Z][a-zA-Z_]*/[A-Z][a-zA-Z_]*$'
+# Output='%s="%s"'
+#
+## Time Zone
 HC_TIMEZONE="Europe/Budapest"
