@@ -22,3 +22,13 @@ This **shell script** runs on a server/vps/Virtualbox and checks any FTP/PHP/MyS
 - HTML with clickable [links](http://online1.hu/)
 - a <span style="color:orange;">coloured</span> text file for console
 - Bash parsable key-value pairs
+
+## Stress tests (seconds)
+
+| Hosting company | steps  | shuffle | AES    |
+| --------------- | ------:| -------:| ------:|
+| AMD FX-6300     |  4.426 |   4.233 |  4.187 |
+| td              |  9.112 |  12.053 |  7.854 |
+| sh              | 11.160 |   8.667 |  1.397 |
+|                 | 00.111 |  00.111 | 00.111 |
+
