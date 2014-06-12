@@ -167,7 +167,17 @@ log_end() {
     echo -e "## --END-- ## $(date -R)\n" >> "$HC_LOG"
 }
 
+wgetrc() {
+	cat <<-WGETRC
+		user_agent=${UA}
+		header=Secret-Key: ${HC_SECRETKEY}
+		timeout=n
+		tries=n
+	WGETRC
+}
+
 wget_def(){
+#TODO  WGETRC="<(wgetrc)" wget "$@"
     wget --user-agent="$UA" --header="Secret-Key: ${HC_SECRETKEY}" "$@"
 }
 
@@ -412,6 +422,8 @@ dns_ip() {
 
     REV_HOSTNAME="$(dnsquery PTR "$HC_IP")"
     if [ $? = 0 ]; then
+        # remove trailing dot for certificate vaildation
+        REV_HOSTNAME="${REV_HOSTNAME%.}"
         notice "reverse hostname (${REV_HOSTNAME})"
         log_vars "REVHOSTNAME" "$REV_HOSTNAME"
     else
@@ -731,8 +743,8 @@ php_timezone() {
 
     ## unspecific check
     #    ! [ -z "$PHP_TZ" ] && ! [ "$PHP_TZ" = 0 ]
-    if [ "$PHP_TZ" = "HC_TIMEZONE" ]; then
-        msg "PHP timezone OK"
+    if [ "$PHP_TZ" = "$HC_TIMEZONE" ]; then
+        msg "PHP timezone OK (${PHP_TZ})"
         log_vars "PHPTIMEZONE" "$PHP_TZ"
     else
         error "PHP timezone NOT set (${PHP_TZ})"
@@ -850,6 +862,7 @@ ftp_upload() {
     ## insert secret key
     sed -i "s/%%%SECRETKEY%%%/${HC_SECRETKEY}/g" "${UNPACKDIR}/${HC_DIR}.htaccess" \
         || fatal "secret key insertion failure"
+#TODO move to generate()
 
     if [ "$HC_CURL" = 1 ]; then
         # wp-config.php

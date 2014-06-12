@@ -25,10 +25,10 @@ This **shell script** runs on a server/vps/Virtualbox and checks any FTP/PHP/MyS
 
 ## Stress tests (seconds)
 
-| Hosting company | steps  | shuffle | AES    |
-| --------------- | ------:| -------:| ------:|
-| AMD FX-6300     |  4.426 |   4.233 |  4.187 |
-| td              |  9.112 |  12.053 |  7.854 |
-| sh              | 11.160 |   8.667 |  1.397 |
-|                 | 00.111 |  00.111 | 00.111 |
+| Hosting company | PHP    | steps  | shuffle | AES    |
+| --------------- | ------ | ------:| -------:| ------:|
+| AMD FX-6300     | 5.4.28 |  4.426 |   4.233 |  4.187 |
+| td              | 5.4    |  9.112 |  12.053 |  7.854 |
+| sh              | 5.3    | 11.160 |   8.667 |  1.397 |
+|                 |        | 00.111 |  00.111 | 00.111 |
 

@@ -56,7 +56,7 @@ define('DB_COLLATE', '');
 //# Name="WordPress table prefix"
 //# Description='The table prefix should NOT be "wp_"'
 //# Validator='^.\+_$'
-//# Output="\$%s = '%s';";
+//# Output="\$%s = '%s';"
 $table_prefix = 'wp_';
 
 //# Variable="WPLANG"

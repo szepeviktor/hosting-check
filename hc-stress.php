@@ -47,10 +47,20 @@ if (php_sapi_name() !== 'cli' && ini_get('max_execution_time') < 20) {
     }
 }
 
+// ab -c3 -n3 http://...../hc-stress.php
+// ab -c5 -n5 http://...../hc-stress.php
+// ab -c10 -n10 http://...../hc-stress.php
+// ab -c20 -n20 http://...../hc-stress.php
+// ab -c30 -n30 http://...../hc-stress.php
+
+// big files seq. read
+
+// disk access time
+
 // iteration ratio:  steps:shuffle:eas ~ 10000:200:1
-printf('steps time: %10.3f' . PHP_EOL, stress_steps());
+printf('steps time:   %10.3f' . PHP_EOL, stress_steps());
 printf('shuffle time: %10.3f' . PHP_EOL, stress_shuffle());
-printf('aes time: %10.3f' . PHP_EOL, stress_aes());
+printf('aes time:     %10.3f' . PHP_EOL, stress_aes());
 
 
 
