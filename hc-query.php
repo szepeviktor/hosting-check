@@ -27,6 +27,7 @@ define('WP_DEBUG', true);
 
 /**  production only  **/
 //define('WP_DEBUG', false);
+/* some themes will refuse to display their option panel */
 define('DISALLOW_FILE_EDIT', true);
 //define('WP_CACHE', true);
 define('DISABLE_WP_CRON', true);
@@ -98,7 +99,7 @@ public function sapi() {
 }
 
 public function apachemods() {
-    if (! function_exists('apache_get_modules')) {
+    if (! is_callable('apache_get_modules')) {
         return '0';
     }
 
@@ -146,7 +147,7 @@ public function mysqli($type = '') {
 
     require($wp_config);
 
-    if (! function_exists('mysqli_real_connect')
+    if (! is_callable('mysqli_real_connect')
         || ! defined('DB_HOST')
         || DB_HOST === '') {
         return '0';
@@ -176,6 +177,8 @@ public function mysqli($type = '') {
         while( $row = mysqli_fetch_row($result)) {
             $total_length += strlen($row[0] . $row[1]) + 2;
         }
+        mysqli_free_result($result);
+        mysqli_close($dbh);
 
         return $total_length;
     } else {
@@ -267,8 +270,8 @@ public function uid() {
 }
 
 public function http() {
-    if (function_exists('stream_socket_client')
-        || (function_exists('curl_init') && function_exists('curl_exec'))) {
+    if (is_callable('stream_socket_client')
+        || (is_callable('curl_init') && is_callable('curl_exec'))) {
         return 'OK';
     }
     return '0';
