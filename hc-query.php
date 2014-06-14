@@ -159,8 +159,10 @@ public function mysqli($type = '') {
     };
 
     if ($type === 'wpoptions') {
+        //mysqli_select_db($dbh, DB_NAME);
         $result = mysqli_query($dbh, "USE `" . DB_NAME . "`;");
-        $version_query = "SELECT option_name, option_value FROM `" . $table_prefix . "options` WHERE autoload = 'yes';";
+        // "autoload" options
+        $version_query = sprintf("SELECT option_name, option_value FROM `%soptions` WHERE autoload = 'yes';", $table_prefix);
     } else {
         // normal operation
         $version_query = "SHOW VARIABLES LIKE 'version'";

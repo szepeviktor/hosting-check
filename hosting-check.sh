@@ -846,6 +846,9 @@ ftp_ssl() {
         log_vars "FTPSSLCOMMAND" "$FTPSSL_COMMAND"
         notice "FTP SSL connect level (${FTPSSL})"
     fi
+    if [ "$FTPSSL" = 0 ]; then
+        notice "ProFTPd  http://www.proftpd.org/docs/contrib/mod_tls.html"
+    fi
 }
 
 ## upload hosting check files
@@ -980,6 +983,7 @@ manual() {
     notice "certificate check: https://www.ssllabs.com/ssltest/analyze.html?d=${HC_HOST}&s=${HC_IP}"
     notice "W3C validator:  http://validator.w3.org/check?group=1&uri=${HC_SITE}"
     notice "check Latin Extended-A characters: font files, webfonts (őűŐŰ€) and !cufon"
+#TODO  slimerjs + automated glyph detection  http://lists.nongnu.org/archive/html/freetype/2014-06/threads.html
     notice "waterfall:  https://www.webpagetest.org/"
     notice "emulate mod_pagespeed:  https://www.webpagetest.org/compare"
     notice "PageSpeed:  http://developers.google.com/speed/pagespeed/insights/?url=${HC_SITE}"
@@ -1069,7 +1073,7 @@ tohtml() {
     php_timezone
     php_mysqli
     php_logfile
-#TODO disk seq.r/w, disk access - php create 100MB files ?quota
+#TODO disk seq.r/w + disk access - 100MB files ?quota
 #TODO php benchmark - CPU limit
 #TODO mysqli benchmark
 #TODO concurrent connections - ab -c X -n Y
