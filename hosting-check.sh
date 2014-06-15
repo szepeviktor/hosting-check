@@ -63,7 +63,7 @@ notice() {
 
 do_ftp() {
     #echo "[DBG] lftp -e $* -u $HC_FTP_USERPASS $HC_FTP_HOST" >&2
-    lftp -e "set cmd:interactive off; set net:timeout 5; set net:max-retries 1; set net:reconnect-interval-base 2; $*" \
+    lftp -e "set cmd:interactive off; set net:timeout 5; set net:max-retries 1; set net:reconnect-interval-base 2; set dns:order 'inet inet6'; $*" \
         -u "$HC_FTP_USERPASS" "$HC_FTP_HOST" > /dev/null
 }
 
@@ -71,7 +71,7 @@ do_curl() {
     [ -r "$HC_CABUNDLE" ] || fatal "can NOT find certificate authority bundle (${HC_CABUNDLE})"
 
     #echo "[DBG] curl -v --user '${HC_FTP_USERPASS/,/:}' $*" >&2
-    curl -sS --cacert "$HC_CABUNDLE" --connect-timeout 5 --retry 1 --retry-delay 2 \
+    curl -sS --cacert "$HC_CABUNDLE" --connect-timeout 5 --retry 1 --retry-delay 2 --ipv4 \
         --user "${HC_FTP_USERPASS/,/:}" "$@"
 }
 
