@@ -2,8 +2,8 @@
 
 # Hosting (webspace) checker
 
-# Depends:  apt-get install lftp bind9-host
-# Depends2: apt-get install curl bind9-host
+# Depends:  apt-get install lftp bind9-host whois
+# Depends2: apt-get install curl bind9-host whois
 # Extra:    pip install ansi2html
 # Version:  0.2
 # Author:   Viktor Szépe <viktor@szepe.net>
@@ -989,7 +989,7 @@ manual() {
     notice "PageSpeed:  http://developers.google.com/speed/pagespeed/insights/?url=${HC_SITE}"
     notice "check hAtom:  http://www.google.com/webmasters/tools/richsnippets?q=${HC_SITE}"
     notice "check included Javascripts"
-    notice "check FOUC"
+    notice "check FOUC, image loading on mouse action (e.g. hover, click)"
     notice "Javascript errors (slimerjs), 404s (slimerjs/gositemap.sh)"
     notice "minify CSS, JS, optimize images (progressive JPEGs)"
     notice "set up WMT:  https://www.google.com/webmasters/tools/home?hl=en"
