@@ -47,6 +47,9 @@ if (php_sapi_name() !== 'cli' && ini_get('max_execution_time') < 20) {
     }
 }
 
+//error_reporting(E_ALL|E_STRICT);
+error_reporting(0);
+
 // ab -c3 -n3 http://...../hc-stress.php
 // ab -c5 -n5 http://...../hc-stress.php
 // ab -c10 -n10 http://...../hc-stress.php
