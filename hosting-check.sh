@@ -588,7 +588,7 @@ php_version() {
 
     # major * 100 + minor
     if [ "$PHP_VERSION" -ge 504 ]; then
-        msg "PHP version OK"
+        msg "PHP version OK (${PHP_VERSION})"
     else
         error "PHP 5.4 is twice as FAST (${PHP_VERSION})"
         notice "upgrade PHP"
@@ -618,7 +618,7 @@ php_exectime() {
     PHP_EXECTIME="$(php_query exectime)"
 
     if [ "$PHP_EXECTIME" -ge 30 ]; then
-        msg "PHP execution time limit OK"
+        msg "PHP execution time limit OK (${PHP_EXECTIME})"
     else
         error "PHP needs at least 30 seconds (${PHP_EXECTIME})"
         notice "ini_set('max_execution_time', 30);"
@@ -681,7 +681,7 @@ php_sapi() {
 
     # complete pattern!
     if grep -q "apache2handler\|cgi-fcgi" <<< "$PHP_SAPI"; then
-        msg "PHP Server API OK"
+        msg "PHP Server API OK (${PHP_SAPI})"
     else
         error "UNKNOWN PHP Server API (${PHP_SAPI})"
     fi
@@ -1039,6 +1039,8 @@ tohtml() {
 
 ## this { ... } is needed for capturing the output
 {
+    msg "https://github.com/szepeviktor/hosting-check"
+
     ## site URL
     siteurl
 
