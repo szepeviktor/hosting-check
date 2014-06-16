@@ -848,6 +848,7 @@ ftp_ssl() {
     fi
     if [ "$FTPSSL" = 0 ]; then
         notice "ProFTPd  http://www.proftpd.org/docs/contrib/mod_tls.html"
+        notice "Pure-FTPd  http://download.pureftpd.org/pure-ftpd/doc/README.TLS"
     fi
 }
 

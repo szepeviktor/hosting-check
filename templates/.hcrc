@@ -10,7 +10,7 @@
 HC_SITE="http://SITE.URL/"
 
 # Variable=HC_FTP_HOST
-# Default="$(sed -r 's|^(([a-z]+:)?//)?([a-z0-9.-]+)/.*$|\3|' <<< "$VALUE")"
+# Default="$(rev_hostname)"
 # Name='FTP hostname'
 # Description='Enter the REAL host name of the FTP server'
 # Validator='^[a-zA-Z0-9.-]\{5,50\}$'

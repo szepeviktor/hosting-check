@@ -40,6 +40,97 @@ reset_file() {
     echo -n > "$FILE"
 }
 
+dnsquery() {
+    ## error 1:  empty host
+    ## error 2:  invalid answer
+    ## error 3:  invalid query type
+    ## error 4:  not found
+
+    local TYPE="$1"
+    local HOST="$2"
+    local ANSWER
+    local IP
+
+    # empty host
+    [ -z "$HOST" ] && return 1
+
+    # first record only
+    IP="$(LC_ALL=C host -t "$TYPE" "$HOST" 2> /dev/null | head -n 1)"
+    if ! [ -z "$IP" ] && [ "$IP" = "${IP/ not found:/}" ] && [ "$IP" = "${IP/ has no /}" ]; then
+        case "$TYPE" in
+            A)
+                ANSWER="${IP#* has address }"
+                if grep -q "^\([0-9]\{1,3\}\.\)\{3\}[0-9]\{1,3\}\$" <<< "$ANSWER"; then
+                    echo "$ANSWER"
+                else
+                    # invalid IP
+                    return 2
+                fi
+            ;;
+            MX)
+                ANSWER="${IP#* mail is handled by *[0-9] }"
+                if grep -q "^[a-z0-9A-Z.-]\+\$" <<< "$ANSWER"; then
+                    echo "$ANSWER"
+                else
+                    # invalid hostname
+                    return 2
+                fi
+            ;;
+            PTR)
+                ANSWER="${IP#* domain name pointer }"
+                if grep -q "^[a-z0-9A-Z.-]\+\$" <<< "$ANSWER"; then
+                    echo "$ANSWER"
+                else
+                    # invalid hostname
+                    return 2
+                fi
+            ;;
+            TXT)
+                ANSWER="${IP#* domain name pointer }"
+                if grep -q "^[a-z0-9A-Z.-]\+\$" <<< "$ANSWER"; then
+                    echo "$ANSWER"
+                else
+                    # invalid hostname
+                    return 2
+                fi
+            ;;
+            *)
+                # invalid type
+                return 3
+            ;;
+        esac
+        return 0
+    else
+        # not found
+        return 4
+    fi
+}
+
+rev_hostname() {
+    local HC_HOST
+    local HC_IP
+    local REV_HOSTNAME
+
+    [ -z "$HC_SITE" ] && echo ""
+
+    HC_HOST="$(sed -r 's|^(([a-z]+:)?//)?([a-z0-9.-]+)/.*$|\3|' <<< "$HC_SITE")"
+
+    HC_IP="$(dnsquery A "$HC_HOST")"
+    if ! [ $? = 0 ]; then
+        echo "${HC_HOST}"
+        return 1
+    fi
+
+    REV_HOSTNAME="$(dnsquery PTR "$HC_IP")"
+    if [ $? = 0 ]; then
+        # remove trailing dot for certificate vaildation
+        echo "${REV_HOSTNAME%.}"
+    else
+        echo "${HC_HOST}"
+        return 1
+    fi
+}
+
 process_template() {
     local TEMPLATE="$1"
     local CONFIG_FILE="$2"
@@ -87,6 +178,8 @@ process_template() {
                 fi
             done
 
+            # set global variable
+            declare "${Variable}"="${VALUE}"
             # append to config file
             printf "$Output\n" "${Variable}" "${VALUE}" >> "$CONFIG_FILE"
 
