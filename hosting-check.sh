@@ -171,14 +171,14 @@ wgetrc() {
 	cat <<-WGETRC
 		user_agent=${UA}
 		header=Secret-Key: ${HC_SECRETKEY}
-		timeout=n
-		tries=n
+		timeout=5
+		tries=1
 	WGETRC
 }
 
 wget_def(){
-#TODO  WGETRC="<(wgetrc)" wget "$@"
-    wget --user-agent="$UA" --header="Secret-Key: ${HC_SECRETKEY}" "$@"
+    #wget --user-agent="$UA" --header="Secret-Key: ${HC_SECRETKEY}" "$@"
+    WGETRC=<(wgetrc) wget "$@"
 }
 
 php_query() {
@@ -481,9 +481,9 @@ keep_alive() {
         | grep -i "^\s*Connection: Keep-Alive\$")"; then
         msg "keep alive OK"
     else
-        #TODO prepend to .htaccess + check with 3 requests
         error "NO keep alive"
-        notice "set keep alive header in .htaccess + test:  Header set Connection Keep-Alive"
+        notice "try to set keep alive header in .htaccess:  Header set Connection Keep-Alive"
+        notice "and test:  echo -e 'readme.html\nlicense.txt\nrobots.txt'|wget -v -i- -O/dev/null --base='$HC_SITE'|grep '^Reusing existing connection'"
     fi
 }
 
@@ -497,6 +497,9 @@ mime_type() {
     local MFILE
 
     MIMES=( \
+        image/jpeg image-jpeg.jpg \
+        image/png image-png.png \
+        image/gif image-gif.gif \
         audio/mp4 audio-m4a.m4a \
         audio/ogg audio-ogg.ogg \
         application/json app-json.json \
@@ -525,7 +528,6 @@ mime_type() {
         text/x-component text-htc.htc \
         text/x-vcard text-vcard.vcf \
     )
-#TODO? text-html.html, text-css.css, image-gif.gif, image-jpeg.jpg, image-png.png
 
     # generate files
     if ! [ -z "$ARG" ]; then
@@ -540,7 +542,7 @@ mime_type() {
         MTYPE="${MIMES[$i]}"
         MFILE="${MIMES[$((i + 1))]}"
         if wget_def -O /dev/null -S "${HC_SITE}${HC_DIR}${MFILE}" 2>&1 \
-            | grep -qi "^\s*Content-Type: ${MTYPE}\$"; then
+            | grep -qi "^\s*Content-Type: ${MTYPE}\(\$\|;\)"; then
             msg "MIME type ${MTYPE} OK"
         else
             #TODO prepend to .htaccess + check again
@@ -606,7 +608,7 @@ php_memory() {
         error "LOW PHP memory limit (${PHP_MEMORY})"
         notice "ini_set('memory_limit', '256M');"
     else
-        msg "PHP memory limit OK"
+        msg "PHP memory limit OK (${PHP_MEMORY})"
     fi
     log_vars "PHPMEMORY" "$PHP_MEMORY"
 }
@@ -801,12 +803,12 @@ ftp_ssl() {
         log_vars "FTPSSL" "$FTPSSL"
         log_vars "FTPSSLCOMMAND" "$FTPSSL_COMMAND"
         notice "curl: FTP SSL connect level (${FTPSSL})"
-#FIXME lftp fails to validate a valid cert
+#FIXME lftp+gnutls2/3 fails to validate a valid cert
         ssl_check "FTPS" "21" "-starttls ftp"
         return
     fi
 
-#TODO support SFTP
+#TODO support SFTP `lftp sftp://SITE.NET/`
 
     ## without SSL
     if do_ftp "set ftp:ssl-allow off; ${FTP_LIST}; exit"; then
