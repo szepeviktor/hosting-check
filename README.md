@@ -1,22 +1,9 @@
 hosting-check
 =============
 
-Hosting (webspace) checker
+Shared hosting service (webspace) checker
 
-### Contribution
-
-You are more than welcome to test drive this script and attach the output in an [issue](https://github.com/szepeviktor/hosting-check/issues/new).
-
-This **shell script** runs on a server/vps/Virtualbox and checks any FTP/PHP/MySQL hosting service/webspace.
-
-## Installation
-
-1. download: `git clone https://github.com/szepeviktor/hosting-check.git && cd hosting-check`
-1. perms:    `chmod +x hosting-check.sh generate-rc.sh`
-1. install:  lftp (curl is a not full featured fallback)
-1. settings: `./generate-rc.sh` will ask you
-1. db vars:  you can have a WordPress installation
-1. start:    `./hosting-check.sh`
+This **shell script** runs on a terminal (Linux, Cygwin, OS X) and checks any FTP/PHP/MySQL hosting service/webspace.
 
 ## Checks
 
@@ -51,9 +38,18 @@ This **shell script** runs on a server/vps/Virtualbox and checks any FTP/PHP/MyS
 
 ## Output types
 
-- HTML with clickable [links](http://online1.hu/)
+- HTML with [clickable links](http://online1.hu/)
 - a <span style="color:orange;">coloured</span> text file for console
 - Bash parsable key-value pairs
+
+## Installation
+
+1. download: `git clone https://github.com/szepeviktor/hosting-check.git && cd hosting-check`
+1. perms:    `chmod +x hosting-check.sh generate-rc.sh`
+1. install:  lftp (curl is a not full featured fallback)
+1. settings: `./generate-rc.sh` will question you
+1. db vars:  you can have a WordPress installation
+1. start:    `./hosting-check.sh`
 
 ## Stress tests (seconds)
 
@@ -63,3 +59,7 @@ This **shell script** runs on a server/vps/Virtualbox and checks any FTP/PHP/MyS
 | td              | 5.4    |  9.112 |  12.053 |  7.854 |
 | sh              | 5.3    | 11.160 |   8.667 |  1.397 |
 | mc              | 5.3    |  7.810 |   7.396 |  5.288 |
+
+### Contribution
+
+You are more than welcome to test drive this script and attach the output in an [issue](https://github.com/szepeviktor/hosting-check/issues/new).
