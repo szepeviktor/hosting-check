@@ -118,15 +118,13 @@ PHP
 #php_value opcache.enable 0
 #php_value opcache.validate_timestamps 1
 #php_value opcache.revalidate_freq 0
-
 ## APC
 #php_value apc.cache_by_default 0
-
 ## New Relic
 #php_value newrelic.enabled 0
 
 <IfModule mod_setenvif.c>
-    SetEnvIf Secret-Key ^%%%SECRETKEY%%%$ hc_allow
+    SetEnvIf Secret-Key ^${HC_SECRETKEY}$ hc_allow
 
     ## Apache < 2.3
     <IfModule !mod_authz_core.c>
@@ -326,7 +324,7 @@ dns_servers() {
     fi
 
     ## Hungarian "Domi"
-    #changes for Cygwin compatiblity DOMI="$(whois --host whois.nic.hu --port 77 "$HC_DOMAIN")"
+    #changes for Cygwin compatibility DOMI="$(whois --host whois.nic.hu --port 77 "$HC_DOMAIN")"
     DOMI="$(whois -h whois.nic.hu -p 77 "$HC_DOMAIN")"
     if [ $? = 0 ] && ! [ "${DOMI#M-OK }" = "$DOMI" ]; then
         msg "Domi OK (${DOMI})"
@@ -546,7 +544,6 @@ mime_type() {
             | grep -qi "^\s*Content-Type: ${MTYPE}\(\$\|;\)"; then
             msg "MIME type ${MTYPE} OK"
         else
-            #TODO prepend to .htaccess + check again
             error "INCORRECT MIME type for ${MTYPE}"
         fi
     done
@@ -554,7 +551,6 @@ mime_type() {
 }
 
 ## gzip compression
-## FIX: h5bp .htaccess
 content_compression() {
     local CCOMPR
 
@@ -562,14 +558,12 @@ content_compression() {
         | grep -i "^\s*Content-Encoding: gzip\$")"; then
         msg "gzip compression OK"
     else
-        #TODO prepend to .htaccess + check compression
         error "NO gzip compression"
         notice "Apache settings:  https://github.com/h5bp/html5-boilerplate/raw/master/.htaccess"
     fi
 }
 
 ## cache control max-age header 11 days - 3 years
-## FIX: h5bp .htaccess
 content_cache() {
     local CCACHE
 
@@ -577,7 +571,6 @@ content_cache() {
         | grep -i "^\s*Cache-Control:.*max-age=[0-9]\{7,9\}\b")"; then
         msg "cache control header OK"
     else
-        #TODO prepend to .htaccess + check again
         error "NO cache control header"
         notice "Apache settings:  https://github.com/h5bp/html5-boilerplate/raw/master/.htaccess"
     fi
@@ -804,12 +797,12 @@ ftp_ssl() {
         log_vars "FTPSSL" "$FTPSSL"
         log_vars "FTPSSLCOMMAND" "$FTPSSL_COMMAND"
         notice "curl: FTP SSL connect level (${FTPSSL})"
-#FIXME lftp+gnutls2/3 fails to validate a valid cert
+#FIXME lftp+gnutls2/3 fails to verify a valid cert
         ssl_check "FTPS" "21" "-starttls ftp"
         return
     fi
 
-#TODO support SFTP `lftp sftp://SITE.NET/`
+#TODO support SFTP  `lftp sftp://SITE.NET/`
 
     ## without SSL
     if do_ftp "set ftp:ssl-allow off; ${FTP_LIST}; exit"; then
@@ -866,10 +859,6 @@ ftp_upload() {
         fatal "can NOT create temporary dir (${UNPACKDIR})"
     fi
 
-    ## insert secret key
-    sed -i "s/%%%SECRETKEY%%%/${HC_SECRETKEY}/g" "${UNPACKDIR}/${HC_DIR}.htaccess" \
-        || fatal "secret key insertion failure"
-#TODO move to generate()
 
     if [ "$HC_CURL" = 1 ]; then
         # wp-config.php

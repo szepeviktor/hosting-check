@@ -3,7 +3,8 @@ hosting-check
 
 Shared hosting service (webspace) checker
 
-This **shell script** runs on a terminal (Linux, Cygwin, OS X) and checks any FTP/PHP/MySQL hosting service/webspace.
+This **shell script** runs on a terminal (Linux, Cygwin, OS X) and checks any FTP/PHP/MySQL hosting service/webspace
+by uploading PHP code and downloading its output.
 
 ## Checks
 
