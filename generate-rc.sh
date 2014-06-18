@@ -198,14 +198,14 @@ continue_db() {
     while : ; do
         read -p "$(tput sgr0)$(tput dim)$(tput setaf 0)$(tput setab 6)${QUESTION}$(tput sgr0) " \
             -e -i "y" ANSWER
-        if grep -q '^y$\|^n$' <<< "$ANSWER"; then
+        if [[ "$ANSWER" = [yYnN] ]]; then
             break
         else
             error "Validation error ($ANSWER)"
         fi
     done
 
-    [ "$ANSWER" = n ] && exit 0
+    [[ "$ANSWER" = [nN] ]] && exit 0
 }
 
 ## example template entry
@@ -223,7 +223,7 @@ title 'Please enter FTP and other SETTINGS'
 process_template "templates/.hcrc" "./.hcrc" 3
 msg "Configuration file (.hcrc) generated OK."
 
-continue_db "Continue with Database credentials? [Y/N]"
+continue_db "Continue with Database credentials? [y/n]"
 
 title 'Please enter MySQL database credentials  http://codex.wordpress.org/Editing_wp-config.php'
 process_template "templates/wp-config.php" "./wp-config.php" 6

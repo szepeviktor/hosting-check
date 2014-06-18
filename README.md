@@ -51,6 +51,10 @@ This **shell script** runs on a terminal (Linux, Cygwin, OS X) and checks any FT
 1. db vars:  you can have a WordPress installation
 1. start:    `./hosting-check.sh`
 
+### Cygwin
+
+On Cygwin use [apt-cyg](https://github.com/transcode-open/apt-cyg) and install ncurses beside lftp, bind-utils and whois.
+
 ## Stress tests (seconds)
 
 | Hosting company | PHP    | steps  | shuffle | AES    |

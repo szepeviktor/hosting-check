@@ -326,7 +326,8 @@ dns_servers() {
     fi
 
     ## Hungarian "Domi"
-    DOMI="$(whois --host whois.nic.hu --port 77 "$HC_DOMAIN")"
+    #changes for Cygwin compatiblity DOMI="$(whois --host whois.nic.hu --port 77 "$HC_DOMAIN")"
+    DOMI="$(whois -h whois.nic.hu -p 77 "$HC_DOMAIN")"
     if [ $? = 0 ] && ! [ "${DOMI#M-OK }" = "$DOMI" ]; then
         msg "Domi OK (${DOMI})"
     else
