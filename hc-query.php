@@ -44,6 +44,10 @@ error_log('logging-test');\n");
 
 class Query {
 
+private function unow() {
+    return microtime(true);
+}
+
 private function expand_shorthand($val) {
     if (empty($val)) {
         return '0';
@@ -279,6 +283,58 @@ public function http() {
     return '0';
 }
 
+private function stress_steps($iter = 25000000) {
+    $start = $this->unow();
+
+    $steps = 0;
+    for ($i = 0; $i < $iter; $i += 1) {
+        $steps += $i;
+    }
+    return $this->unow() - $start;
+}
+
+private function stress_shuffle($iter = 500000) {
+    $start = $this->unow();
+
+    $hash = 0;
+    for ($i = 0; $i < $iter; $i += 1) {
+        // XOR
+        $hash ^= md5(substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, rand(1,10)));
+    }
+    return $this->unow() - $start;
+}
+
+private function stress_aes($iter = 2500) {
+    $start = $this->unow();
+
+    $data = md5(substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, rand(1,10)));
+    $keyhash = md5('secret key');
+    $ivsize = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC);
+    $iv = mcrypt_create_iv($ivsize, MCRYPT_DEV_URANDOM);
+
+    $cipherdata = '';
+    for ($i = 0; $i < $iter; $i += 1) {
+        // XOR
+        $cipherdata ^= mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $keyhash, $data, MCRYPT_MODE_CBC, $iv);
+    }
+    return $this->unow() - $start;
+}
+
+
+public function stresscpu() {
+    if (is_int(ini_get('max_execution_time')) && ini_get('max_execution_time') < 20) {
+        if (! ini_set('max_execution_time', 20)) {
+            return '0';
+        }
+    }
+    if (! is_callable('mcrypt_get_iv_size')) {
+        return '0';
+    }
+
+    // iteration ratio:  steps:shuffle:eas ~ 10000:200:1
+    return sprintf("%.3f\t%.3f\t%.3f", $this->stress_steps(), $this->stress_shuffle() ,$this->stress_aes());
+}
+
 //class
 }
 
@@ -286,7 +342,7 @@ public function http() {
 /** main **/
 
 // hide errors
-//error_reporting(E_ALL|E_STRICT);
+//DBG  error_reporting(E_ALL|E_STRICT);
 error_reporting(0);
 
 $phpq = new Query;

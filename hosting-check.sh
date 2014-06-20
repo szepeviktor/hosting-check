@@ -36,12 +36,79 @@ HC_LOG="hc_${HC_HOST//[^a-z]}.vars.log"
 HC_DIR="hosting-check/"
 HC_UA='Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:24.0) Gecko/20140419 Firefox/24.0 hosting-check/0.2'
 HC_CABUNDLE="/etc/ssl/certs/ca-certificates.crt"
+HC_BENCHMARK_VALUES="$(mktemp)"
+HC_LOCK="$(mktemp)"
 ## curl or lftp
 HC_CURL="1"
 which lftp &> /dev/null && HC_CURL="0"
 
+# prepare as multiplied integer without decimal point
+fullint() {
+    local A="$1"
+    local DECIMALS="$2"
+    local A_INT
+    local A_DEC
+    local A_FULL
+
+    # fixed number of decimals
+    A_DEC="$(LC_NUMERIC=C printf "%.${DECIMALS}f" "$A")"
+    # remove dot
+    A_DEC="${A_DEC/./}"
+    # trim leading zero
+    LC_NUMERIC=C printf "%.0f" "$A_DEC"
+}
+
+add() {
+    local A="$1"
+    local B="$2"
+    local DECIMALS="$3"
+    local A_FULL
+    local B_FULL
+    local SUM_FULL
+
+    [ -z "$DECIMALS" ] && DECIMALS="3"
+
+    A_FULL="$(fullint "$A" "$DECIMALS")"
+    B_FULL="$(fullint "$B" "$DECIMALS")"
+    # should be at least DECIMALS digits
+    SUM_FULL="$(LC_NUMERIC=C printf "%0${DECIMALS}d" $((A_FULL + B_FULL)) )"
+
+    # stripping and .adding this many digits: DECIMALS
+    LC_NUMERIC=C printf "%.${DECIMALS}f" "${SUM_FULL:0:(-${DECIMALS})}.${SUM_FULL:(-${DECIMALS})}"
+}
+
+divide() {
+    local A="$1"
+    local B="$2"
+    local DECIMALS="$3"
+    local A_FULL
+    local B_FULL
+    local SUM_FULL
+
+    [ -z "$DECIMALS" ] && DECIMALS="0"
+
+    A_FULL="$(fullint "$A" "$DECIMALS")"
+    # multiply by 10^DECIMALS for precision
+    A_FULL="$((A_FULL * $(LC_NUMERIC=C printf "%.0f" "1e${DECIMALS}") ))"
+
+    B_FULL="$(fullint "$B" "$DECIMALS")"
+
+    # should be at least DECIMALS digits
+    SUM_FULL="$(LC_NUMERIC=C printf "%0${DECIMALS}d" $((A_FULL / B_FULL)) )"
+
+    # stripping and .adding this many digits: DECIMALS
+    LC_NUMERIC=C printf "%.${DECIMALS}f" "${SUM_FULL:0:(-${DECIMALS})}.${SUM_FULL:(-${DECIMALS})}"
+}
+
+# singleton echo
+secho() {
+    (
+        flock 9
+        echo "$*"
+    ) 9> "$HC_LOCK"
+}
 error() {
-    echo "$(tput sgr0)$(tput bold)$(tput setaf 7)$(tput setab 1)[hosting-check]$(tput sgr0) $*" >&2
+    secho "$(tput sgr0)$(tput bold)$(tput setaf 7)$(tput setab 1)[hosting-check]$(tput sgr0) $*" >&2
 }
 
 fatal() {
@@ -50,15 +117,15 @@ fatal() {
 }
 
 msg() {
-    echo "$(tput sgr0)$(tput dim)$(tput setaf 0)$(tput setab 2)[hosting-check]$(tput sgr0) $*"
+    secho "$(tput sgr0)$(tput dim)$(tput setaf 0)$(tput setab 2)[hosting-check]$(tput sgr0) $*"
 }
 
 codeblock() {
-    echo "$(tput sgr0)$(tput bold)$(tput setaf 0)$(tput setab 7)$*$(tput sgr0)"
+    secho "$(tput sgr0)$(tput bold)$(tput setaf 0)$(tput setab 7)$*$(tput sgr0)"
 }
 
 notice() {
-    echo "$(tput sgr0)$(tput dim)$(tput setaf 0)$(tput setab 3)[hosting-check]$(tput sgr0) $*"
+    secho "$(tput sgr0)$(tput dim)$(tput setaf 0)$(tput setab 3)[hosting-check]$(tput sgr0) $*"
 }
 
 do_ftp() {
@@ -183,6 +250,146 @@ php_query() {
     local QUERY="$1"
 
     wget_def -qO- "${HC_SITE}${HC_DIR}hc-query.php?q=${QUERY}"
+}
+
+php_long_query() {
+    local QUERY="$1"
+
+    wget_def -qO- --timeout 35 "${HC_SITE}${HC_DIR}hc-query.php?q=${QUERY}"
+}
+
+## execute CPU stress test
+stress_cpu() {
+    local ID="$1"
+    local BENCHMARKS
+    local BM1
+    local BM2
+    local BM3
+
+    BENCHMARKS="$(php_long_query stresscpu)"
+
+    BM1="$(cut -f 1 <<< "$BENCHMARKS")"
+    BM2="$(cut -f 2 <<< "$BENCHMARKS")"
+    BM3="$(cut -f 3 <<< "$BENCHMARKS")"
+
+    if [ -z "$BENCHMARKS" ] \
+        || [ "$BM1" = 0 ] \
+        || [ "$BM2" = 0 ] \
+        || [ "$BM3" = 0 ]; then
+        notice "CPU stress test [${ID}] failed (${BENCHMARKS})"
+        return 1
+    else
+        ## success
+        secho "$BENCHMARKS" >> "$HC_BENCHMARK_VALUES"
+        return 0
+    fi
+}
+
+# calculate an display averages
+stress_cpu_averages() {
+    local -a HC_BENCHMARK=( 0 0 0 )
+    local BMV
+    local -a VALUES=( 0 0 0 )
+    local -i ROUNDS="0"
+
+    # average
+    while read BMV; do
+        VALUES[0]="$(cut -f 1 <<< "$BMV")"
+        VALUES[1]="$(cut -f 2 <<< "$BMV")"
+        VALUES[2]="$(cut -f 3 <<< "$BMV")"
+
+        HC_BENCHMARK[0]="$(add "${HC_BENCHMARK[0]}" "${VALUES[0]}" 3)"
+        HC_BENCHMARK[1]="$(add "${HC_BENCHMARK[1]}" "${VALUES[1]}" 3)"
+        HC_BENCHMARK[2]="$(add "${HC_BENCHMARK[2]}" "${VALUES[2]}" 3)"
+        ROUNDS+="1"
+    done < "$HC_BENCHMARK_VALUES"
+
+    [ "$ROUNDS" = 0 ] && return 1
+    notice "CPU stress averages steps/shuffle/AES $(divide "${HC_BENCHMARK[0]}" "$ROUNDS" 3)/$(divide "${HC_BENCHMARK[1]}" "$ROUNDS" 3)/$(divide "${HC_BENCHMARK[2]}" "$ROUNDS" 3)"
+}
+
+## concurrent CPU stress tests
+stress_cpu_multi() {
+    local CONCURRENCY="$1"
+    local I2
+    local -a FAILURES
+
+    # initialize output
+    echo -n > "$HC_BENCHMARK_VALUES"
+
+    # start
+    for (( i = 1; i < CONCURRENCY + 1; i += 1 )); do
+        I2="$(printf "%02d" "$i")"
+        # writes to HC_BENCHMARK_VALUES
+        stress_cpu "${I2}/${CONCURRENCY}" &
+    done
+
+    # wait
+    for (( i = 1; i < CONCURRENCY + 1; i += 1 )); do
+        if ! wait %${i}; then
+            FAILURES+=( ${i} )
+       fi
+    done
+
+    stress_cpu_averages
+
+    # evaluate
+    if [ -z "${FAILURES[*]}" ]; then
+        # all OK
+        return 0
+    fi
+
+    # kill all jobs
+    { jobs -p | xargs kill -9 ;} &> /dev/null
+    return 1
+}
+
+file_download() {
+    local ID="$1"
+    local URL="$2"
+    local MD5="$3"
+
+    if ! wget_def -q -O- "$URL" 2>&1 \
+        | md5sum \
+        | grep -q "^${MD5}$"; then
+        notice "file download [${ID}] failed"
+        return 1
+    fi
+
+    return 0
+}
+
+## concurrent static file download
+static_download_multi() {
+    local CONCURRENCY="$1"
+    local URL="$2"
+    local MD5="$3"
+    local I2
+    local -a FAILURES
+    local i
+
+    # start
+    for (( i = 1; i < CONCURRENCY + 1; i += 1 )); do
+        I2="$(printf "%02d" "$i")"
+        file_download "${I2}/${CONCURRENCY}" "$URL" "$MD5" &
+    done
+
+    # wait
+    for (( i = 1; i < CONCURRENCY + 1; i += 1 )); do
+        if ! wait %${i}; then
+            FAILURES+=( ${i} )
+       fi
+    done
+
+    # evaluate
+    if [ -z "${FAILURES[*]}" ]; then
+        # all OK
+        return 0
+    fi
+
+    # kill all jobs
+    { jobs -p | xargs kill -9 ;} &> /dev/null
+    return 1
 }
 
 dnsquery() {
@@ -576,6 +783,22 @@ content_cache() {
     fi
 }
 
+## concurrent file downloads 10/20/50/100/200
+http_concurrent() {
+    local URL="${HC_SITE}${HC_DIR}text-html.html"
+    local MD5="$(wget_def -q -O- "$URL" | md5sum)"
+    local C
+
+    for C in 10 20 50 100 200; do
+        if static_download_multi "${C}" "$URL" "$MD5"; then
+            msg "${C} static files concurrently OK"
+        else
+            error "${C} static files download test failure"
+            return
+        fi
+    done
+}
+
 ## min. PHP >= 5.4
 php_version() {
     local PHP_VERSION
@@ -737,13 +960,11 @@ php_timezone() {
 
     PHP_TZ="$(php_query timezone)"
 
-    ## unspecific check
-    #    ! [ -z "$PHP_TZ" ] && ! [ "$PHP_TZ" = 0 ]
     if [ "$PHP_TZ" = "$HC_TIMEZONE" ]; then
         msg "PHP timezone OK (${PHP_TZ})"
         log_vars "PHPTIMEZONE" "$PHP_TZ"
     else
-        error "PHP timezone NOT set (${PHP_TZ})"
+        error "DIFFERENT/missing PHP timezone (${PHP_TZ})"
         notice "date_default_timezone_set('${HC_TIMEZONE}');"
     fi
 }
@@ -772,10 +993,24 @@ php_logfile() {
         error "LOG dir/file creation failure"
         notice "create log dir and file manually, give 0777 permissions"
     else
-        msg "error reporting OK ()"
+        msg "error reporting OK"
         notice "copy this snippet to wp-config.php:"
         codeblock "$LOGFILE"
     fi
+}
+
+## CPU stress tests 1/3/5/10/20/30
+php_cpu() {
+    local P
+
+    for P in 1 3 5 10 20 30; do
+        if stress_cpu_multi "${P}"; then
+            msg "${P}x CPU stress test OK"
+        else
+            error "${P}x CPU stress test failure"
+            return
+        fi
+    done
 }
 
 ## size of WordPress autoload options
@@ -909,6 +1144,8 @@ ftp_ping() {
 ## delete hosting check files
 ftp_destruct() {
     local -a FILES
+
+    rm "$HC_LOCK"
 
     if [ "$HC_CURL" = 1 ]; then
         while read FILE; do
@@ -1055,6 +1292,7 @@ tohtml() {
     mime_type
     content_compression
     content_cache
+    http_concurrent
 
     ## PHP
     php_version
@@ -1068,10 +1306,9 @@ tohtml() {
     php_timezone
     php_mysqli
     php_logfile
+    php_cpu
 #TODO disk seq.r/w + disk access - 100MB files ?quota
-#TODO php benchmark - CPU limit
 #TODO mysqli benchmark
-#TODO concurrent connections - ab -c X -n Y
 
     ## manual todos
     manual

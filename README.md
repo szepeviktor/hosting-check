@@ -4,7 +4,7 @@ hosting-check
 Shared hosting service (webspace) checker
 
 This **shell script** runs on a terminal (Linux, Cygwin, OS X) and checks any FTP/PHP/MySQL hosting service/webspace
-by uploading PHP code and downloading its output.
+by uploading PHP code and downloading its output. No SSH access is needed for the hosting service, it runs on a separate terminal.
 
 ## Checks
 
@@ -55,6 +55,7 @@ by uploading PHP code and downloading its output.
 ### Cygwin
 
 On Cygwin use [apt-cyg](https://github.com/transcode-open/apt-cyg) and install ncurses beside lftp, bind-utils and whois.
+`apt-cyg install ncurses lftp bind-utils whois`
 
 ## Stress tests (seconds)
 
