@@ -51,7 +51,7 @@ fullint() {
     local A_FULL
 
     # fixed number of decimals
-    A_DEC="$(LC_NUMERIC=C printf "%.${DECIMALS}f" "$A")"
+    LC_NUMERIC=C printf -v A_DEC "%.${DECIMALS}f" "$A"
     # remove dot
     A_DEC="${A_DEC/./}"
     # trim leading zero
@@ -65,16 +65,19 @@ add() {
     local A_FULL
     local B_FULL
     local SUM_FULL
+    local TRIMEND=""
 
     [ -z "$DECIMALS" ] && DECIMALS="3"
 
     A_FULL="$(fullint "$A" "$DECIMALS")"
     B_FULL="$(fullint "$B" "$DECIMALS")"
     # should be at least DECIMALS digits
-    SUM_FULL="$(LC_NUMERIC=C printf "%0${DECIMALS}d" $((A_FULL + B_FULL)) )"
+    LC_NUMERIC=C printf -v SUM_FULL "%0${DECIMALS}d" $((A_FULL + B_FULL))
 
     # stripping and .adding this many digits: DECIMALS
-    LC_NUMERIC=C printf "%.${DECIMALS}f" "${SUM_FULL:0:(-${DECIMALS})}.${SUM_FULL:(-${DECIMALS})}"
+    #old bash throws error: LC_NUMERIC=C printf "%.${DECIMALS}f" "${SUM_FULL:0:(-${DECIMALS})}.${SUM_FULL:(-${DECIMALS})}"
+    printf -v TRIMEND '?%.0s' $(seq 1 ${DECIMALS})
+    LC_NUMERIC=C printf "%.${DECIMALS}f" "${SUM_FULL%$TRIMEND}.${SUM_FULL:(-${DECIMALS})}"
 }
 
 divide() {
@@ -94,7 +97,7 @@ divide() {
     B_FULL="$(fullint "$B" "$DECIMALS")"
 
     # should be at least DECIMALS digits
-    SUM_FULL="$(LC_NUMERIC=C printf "%0${DECIMALS}d" $((A_FULL / B_FULL)) )"
+    LC_NUMERIC=C printf -v SUM_FULL "%0${DECIMALS}d" $((A_FULL / B_FULL))
 
     # stripping and .adding this many digits: DECIMALS
     LC_NUMERIC=C printf "%.${DECIMALS}f" "${SUM_FULL:0:(-${DECIMALS})}.${SUM_FULL:(-${DECIMALS})}"
@@ -320,7 +323,7 @@ stress_cpu_multi() {
 
     # start
     for (( i = 1; i < CONCURRENCY + 1; i += 1 )); do
-        I2="$(printf "%02d" "$i")"
+        printf -v I2 "%02d" "$i"
         # writes to HC_BENCHMARK_VALUES
         stress_cpu "${I2}/${CONCURRENCY}" &
     done
@@ -371,7 +374,7 @@ static_download_multi() {
 
     # start
     for (( i = 1; i < CONCURRENCY + 1; i += 1 )); do
-        I2="$(printf "%02d" "$i")"
+        printf -v I2 "%02d" "$i"
         file_download "${I2}/${CONCURRENCY}" "$URL" "$MD5" &
     done
 
