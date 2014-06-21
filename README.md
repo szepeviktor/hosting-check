@@ -30,10 +30,10 @@ by uploading PHP code and downloading its output. No SSH access is needed for th
 - PHP time zone
 - MySQL version
 - set up PHP error logging
-- CPU stress test (halfdone)
+- CPU stress test
 - disk benchmark (halfdone)
 - MySQL benchmark (TODO)
-- concurrent HTTP connections (TODO)
+- concurrent HTTP connections
 - total size of WordPress "autoload" options
 - and a lot of manual checks (notices, links)
 

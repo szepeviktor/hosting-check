@@ -273,6 +273,7 @@ stress_cpu() {
     BM3="$(cut -f 3 <<< "$BENCHMARKS")"
 
     if [ -z "$BENCHMARKS" ] \
+        || [ "$BENCHMARKS" = 0 ] \
         || [ "$BM1" = 0 ] \
         || [ "$BM2" = 0 ] \
         || [ "$BM3" = 0 ]; then
