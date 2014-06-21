@@ -65,7 +65,7 @@ add() {
     local A_FULL
     local B_FULL
     local SUM_FULL
-    local TRIMEND=""
+    local TRIMEND
 
     [ -z "$DECIMALS" ] && DECIMALS="3"
 
@@ -76,7 +76,9 @@ add() {
 
     # stripping and .adding this many digits: DECIMALS
     #old bash throws error: LC_NUMERIC=C printf "%.${DECIMALS}f" "${SUM_FULL:0:(-${DECIMALS})}.${SUM_FULL:(-${DECIMALS})}"
-    printf -v TRIMEND '?%.0s' $(seq 1 ${DECIMALS})
+    #slow: printf -v TRIMEND '?%.0s' $(seq 1 ${DECIMALS})
+    printf -v TRIMEND "%*s" "$DECIMALS"
+    TRIMEND="${TRIMEND// /?}"
     LC_NUMERIC=C printf "%.${DECIMALS}f" "${SUM_FULL%$TRIMEND}.${SUM_FULL:(-${DECIMALS})}"
 }
 
