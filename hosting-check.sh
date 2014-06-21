@@ -89,6 +89,7 @@ divide() {
     local A_FULL
     local B_FULL
     local SUM_FULL
+    local TRIMEND
 
     [ -z "$DECIMALS" ] && DECIMALS="0"
 
@@ -102,7 +103,9 @@ divide() {
     LC_NUMERIC=C printf -v SUM_FULL "%0${DECIMALS}d" $((A_FULL / B_FULL))
 
     # stripping and .adding this many digits: DECIMALS
-    LC_NUMERIC=C printf "%.${DECIMALS}f" "${SUM_FULL:0:(-${DECIMALS})}.${SUM_FULL:(-${DECIMALS})}"
+    printf -v TRIMEND "%*s" "$DECIMALS"
+    TRIMEND="${TRIMEND// /?}"
+    LC_NUMERIC=C printf "%.${DECIMALS}f" "${SUM_FULL%$TRIMEND}.${SUM_FULL:(-${DECIMALS})}"
 }
 
 # singleton echo
