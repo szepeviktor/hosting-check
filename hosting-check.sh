@@ -250,7 +250,6 @@ wgetrc() {
 }
 
 wget_def(){
-    #wget --user-agent="$UA" --header="Secret-Key: ${HC_SECRETKEY}" "$@"
     WGETRC=<(wgetrc) wget "$@"
 }
 
@@ -894,7 +893,7 @@ php_uid() {
     PHP_UID="$(php_query uid)"
 
     if [ "$PHP_UID" = 0 ]; then
-        error "PHP/FTP UID missmatch"
+        error "PHP/FTP UID mismatch"
     else
         msg "PHP/FTP UID OK (${PHP_UID})"
         log_vars "PHPUID" "$PHP_UID"
@@ -1008,6 +1007,20 @@ php_logfile() {
     fi
 }
 
+## CPU info
+php_cpuinfo() {
+    local CPU_INFO
+
+    CPU_INFO="$(php_query cpuinfo)"
+
+    if [ -z "$CPU_INFO" ] || [ "$CPU_INFO" = 0 ]; then
+        notice "NO CPU info"
+    else
+        notice "CPUs: ${CPU_INFO}"
+        log_vars "CPU" "$CPU_INFO"
+    fi
+}
+
 ## CPU stress tests 1/3/5/10/20/30
 php_cpu() {
     local P
@@ -1020,6 +1033,28 @@ php_cpu() {
             return
         fi
     done
+}
+
+## disk access time
+php_disk() {
+    local ACCESSTIME
+
+    ACCESSTIME="$(php_long_query accesstime)"
+
+    if [ -z "$ACCESSTIME" ] || [ "$ACCESSTIME" = 0 ]; then
+        error "disk stress test failure"
+    else
+        msg "1 GB file creation time/one million disk accesses time: ${ACCESSTIME/	//}"
+
+        # second test
+        ACCESSTIME="$(php_long_query accesstime)"
+
+        if [ -z "$ACCESSTIME" ] || [ "$ACCESSTIME" = 0 ]; then
+            error "second disk stress test failure"
+        else
+            msg "second file creation time/disk access time: ${ACCESSTIME/	//}"
+        fi
+    fi
 }
 
 ## size of WordPress autoload options
@@ -1315,8 +1350,9 @@ tohtml() {
     php_timezone
     php_mysqli
     php_logfile
+    php_cpuinfo
     php_cpu
-#TODO disk seq.r/w + disk access - 100MB files ?quota
+    php_disk
 #TODO mysqli benchmark
 
     ## manual todos

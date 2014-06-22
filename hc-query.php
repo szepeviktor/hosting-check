@@ -283,6 +283,24 @@ public function http() {
     return '0';
 }
 
+public function cpuinfo() {
+    $cpuinfo = '/proc/cpuinfo';
+    $matches = array();
+
+    if ( file_exists( $cpuinfo ) ) {
+        $cpu = file_get_contents( $cpuinfo );
+
+        if ( preg_match_all('/^model name\s*:\s+(.*)\s*$/mU', $cpu, $matches, PREG_SET_ORDER) > 0 ) {
+            return sprintf( '%d*%s', count( $matches ), $matches[0][1] );
+        } else {
+            return '0';
+        }
+    } else {
+        // no access
+        return '0';
+    }
+}
+
 private function stress_steps($iter = 25000000) {
     $start = $this->unow();
 
@@ -335,6 +353,83 @@ public function stresscpu() {
     return sprintf("%.3f\t%.3f\t%.3f", $this->stress_steps(), $this->stress_shuffle() ,$this->stress_aes());
 }
 
+private function dumpfile( $filename, $dumpsize ) {
+    $onemega = '';
+    for ( $i = 0; $i < 1048576; $i += 1 ) {
+        // prevent compression
+        $onemega .= chr( rand( 1, 255 ) );
+    }
+
+    for ( $i = 0; $i < $dumpsize; $i += 1 ) {
+        if ( ! file_put_contents( $filename, $onemega, FILE_APPEND ) ) {
+            unlink( $filename );
+            return false;
+        };
+    }
+
+    return true;
+}
+
+private function seeks( $filename, $seeks = 1000000 ) {
+    // for fgets
+    $size = filesize( $filename ) - 4096;
+
+    // smaller than 10MB
+    if ( $size === false || $size < 10485760) {
+        return false;
+    }
+
+    $handle = fopen( $filename, 'r' );
+    if ( $handle === false ) {
+        return false;
+    }
+
+    for ( $i = 0; $i < $seeks; $i += 1 ) {
+        fseek( $handle, rand( 0, $size ) );
+        fgets( $handle, 4096 );
+    }
+
+    fclose($handle);
+    unlink($filename);
+
+    return true;
+}
+
+//public function accesstime( $filename = './accestime.dump', $dumpsize = 1000 ) {
+public function accesstime( $filename = './accestime.dump', $dumpsize = 900 ) {
+    // only to reduce
+    if ( isset( $_GET['dumpsize'] ) ) {
+        $tobe_size = intval( $_GET['dumpsize'] );
+        if ( $tobe_size < $dumpsize ) {
+            $dumpsize = $tobe_size;
+        }
+    }
+
+    if ( empty( $filename ) || empty( $dumpsize ) || intval( $dumpsize ) < 10 ) {
+        return '0';
+    }
+
+    // cannot create
+    if ( ! touch( $filename ) ) {
+        return '0';
+    }
+
+    $start = $this->unow();
+    if (! $this->dumpfile( $filename, $dumpsize ) ) {
+        return '0';
+    }
+    $dumptime = $this->unow() - $start;
+
+    $start = $this->unow();
+    if ( ! $this->seeks( $filename ) ) {
+        return '0';
+    }
+    $seektime = $this->unow() - $start;
+
+    // dump time TAB seek time
+    return sprintf( "%.3f\t%.3f", $dumptime, $seektime );
+}
+
 //class
 }
 
@@ -342,13 +437,13 @@ public function stresscpu() {
 /** main **/
 
 // hide errors
-//DBG  error_reporting(E_ALL|E_STRICT);
-error_reporting(0);
+error_reporting( 0 );
+//DBG  error_reporting( E_ALL | E_STRICT );
 
 $phpq = new Query;
 
 //DBG  $_GET['q'] = $argv[1];
-if (empty($_GET['q'])) {
+if ( empty( $_GET['q'] ) ) {
     $phpq->fail();
 }
 
