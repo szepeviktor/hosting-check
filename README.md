@@ -19,6 +19,7 @@ by uploading PHP code and downloading its output. No SSH access is needed for th
 - MIME types (from the [HTML5 Boilerplate](https://github.com/h5bp/html5-boilerplate/) project)
 - HTTP compression
 - HTTP Cache-Control header
+- concurrent HTTP connections
 - PHP version
 - PHP memory limit
 - PHP excution time limit
@@ -31,10 +32,9 @@ by uploading PHP code and downloading its output. No SSH access is needed for th
 - MySQL version
 - set up PHP error logging
 - server CPU info
-- CPU stress test
+- CPU **stress test**
 - disk benchmarks
 - MySQL benchmark (TODO)
-- concurrent HTTP connections
 - total size of WordPress "autoload" options
 - and a lot of manual checks (notices, links)
 

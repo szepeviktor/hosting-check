@@ -8,6 +8,8 @@
 ## lftpgnutls3 - lftp compiled with GnuTLS v3 from Debian wheezy source package
 ## lftpgnutls3-src - lftp compiled with GnuTLS v3 from upstream source
 ## lftpopenssl - lftp compiled with OpenSSL
+## gnutls-cli
+## openssl
 
 
 # HC_FTP_HOST  HC_FTP_USER  HC_FTP_PASSWORD
