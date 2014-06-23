@@ -1043,7 +1043,7 @@ php_disk() {
     ACCESSTIME="$(php_long_query accesstime)"
 
     if [ -z "$ACCESSTIME" ] || [ "$ACCESSTIME" = 0 ]; then
-        error "disk stress test failure"
+        error "disk stress test failure/too slow"
     else
         msg "1 GB file creation time/one million disk accesses time: ${ACCESSTIME/	//}"
 
@@ -1051,7 +1051,7 @@ php_disk() {
         ACCESSTIME="$(php_long_query accesstime)"
 
         if [ -z "$ACCESSTIME" ] || [ "$ACCESSTIME" = 0 ]; then
-            error "second disk stress test failure"
+            error "second disk stress test failure/too slow"
         else
             msg "second file creation time/disk access time: ${ACCESSTIME/	//}"
         fi
