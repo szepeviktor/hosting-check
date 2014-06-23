@@ -67,6 +67,7 @@ On Cygwin use [apt-cyg](https://github.com/transcode-open/apt-cyg) and install n
 | td              | 5.4    |  9.112 |  12.053 |  7.854 |
 | sh              | 5.3    | 11.160 |   8.667 |  1.397 |
 | mc              | 5.3    |  7.810 |   7.396 |  5.288 |
+| wpe             | 5.3    |  2.962 |   2.500 |  0.963 |
 
 Company names are hidden intentionally.
 
