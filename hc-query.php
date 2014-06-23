@@ -395,8 +395,8 @@ private function seeks( $filename, $seeks = 1000000 ) {
     return true;
 }
 
-//public function accesstime( $filename = './accestime.dump', $dumpsize = 1000 ) {
-public function accesstime( $filename = './accestime.dump', $dumpsize = 900 ) {
+public function accesstime( $filename = './accestime.dump', $dumpsize = 1000 ) {
+//public function accesstime( $filename = './accestime.dump', $dumpsize = 800 ) {
     // only to reduce
     if ( isset( $_GET['dumpsize'] ) ) {
         $tobe_size = intval( $_GET['dumpsize'] );

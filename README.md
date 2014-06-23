@@ -1,5 +1,5 @@
-hosting-check
-=============
+Hosting checker
+===============
 
 Shared hosting service (webspace) checker
 
@@ -48,7 +48,7 @@ by uploading PHP code and downloading its output. No SSH access is needed for th
 
 1. download: `git clone https://github.com/szepeviktor/hosting-check.git && cd hosting-check`
 1. perms:    `chmod +x hosting-check.sh generate-rc.sh`
-1. install:  lftp (curl is a not full featured fallback)
+1. install:  lftp (curl is not a full featured fallback)
 1. settings: `./generate-rc.sh` will question you
 1. db vars:  you can have a WordPress installation
 1. start:    `./hosting-check.sh`
@@ -56,6 +56,7 @@ by uploading PHP code and downloading its output. No SSH access is needed for th
 ### Cygwin
 
 On Cygwin use [apt-cyg](https://github.com/transcode-open/apt-cyg) and install ncurses beside lftp, bind-utils and whois.
+
 `apt-cyg install ncurses lftp bind-utils whois`
 
 ## Stress tests (seconds)
@@ -66,6 +67,8 @@ On Cygwin use [apt-cyg](https://github.com/transcode-open/apt-cyg) and install n
 | td              | 5.4    |  9.112 |  12.053 |  7.854 |
 | sh              | 5.3    | 11.160 |   8.667 |  1.397 |
 | mc              | 5.3    |  7.810 |   7.396 |  5.288 |
+
+Company names are hidden intentionally.
 
 ### Contribution
 

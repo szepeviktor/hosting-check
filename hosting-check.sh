@@ -28,13 +28,14 @@ HC_TIMEZONE="Europe/Budapest"
 
 #######################
 
+HC_VERSION="0.2"
 HC_FTP_USERPASS="${HC_FTP_USER},${HC_FTP_PASSWORD}"
 HC_SECRETKEY="$(echo "$RANDOM" | md5sum | cut -d' ' -f1)"
 HC_DOMAIN="$(sed -r 's|^.*[./]([^./]+\.[^./]+).*$|\1|' <<< "$HC_SITE")"
 HC_HOST="$(sed -r 's|^(([a-z]+:)?//)?([a-z0-9.-]+)/.*$|\3|' <<< "$HC_SITE")"
 HC_LOG="hc_${HC_HOST//[^a-z]}.vars.log"
 HC_DIR="hosting-check/"
-HC_UA='Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:24.0) Gecko/20140419 Firefox/24.0 hosting-check/0.2'
+HC_UA='Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:24.0) Gecko/20140419 Firefox/24.0 hosting-check/'"$HC_VERSION"
 HC_CABUNDLE="/etc/ssl/certs/ca-certificates.crt"
 HC_BENCHMARK_VALUES="$(mktemp)"
 HC_LOCK="$(mktemp)"
@@ -1312,7 +1313,7 @@ tohtml() {
 
 ## this { ... } is needed for capturing the output
 {
-    msg "https://github.com/szepeviktor/hosting-check"
+    msg "Hosting checker v${HC_VERSION}  https://github.com/szepeviktor/hosting-check"
 
     ## site URL
     siteurl
