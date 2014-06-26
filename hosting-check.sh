@@ -247,6 +247,7 @@ wgetrc() {
 	cat <<-WGETRC
 		user_agent=${UA}
 		header=Secret-Key: ${HC_SECRETKEY}
+		max_redirect=0
 		timeout=5
 		tries=1
 	WGETRC
