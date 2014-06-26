@@ -206,7 +206,7 @@ public function wpoptions() {
 }
 
 public function logfile() {
-    $docroot = @$_SERVER['DOCUMENT_ROOT'];
+    $docroot = $_SERVER['DOCUMENT_ROOT'];
     if (empty($docroot)) {
         return '0';
     }
@@ -263,21 +263,27 @@ public function safe() {
 }
 
 public function uid() {
+    if ( ! is_callable( 'posix_getuid' )
+        || ! is_callable( 'getmyuid' )
+        || ! is_callable( 'posix_geteuid' ) ) {
+        return '0';
+    }
+
     // webserver UID
     $uid = posix_getuid();
-    if (posix_geteuid() !==  $uid) {
+    if ( posix_geteuid() !==  $uid ) {
         return '0';
     }
     // FTP UID
-    if (getmyuid() !== $uid) {
+    if ( getmyuid() !== $uid ) {
         return '0';
     }
     return $uid;
 }
 
 public function http() {
-    if (is_callable('stream_socket_client')
-        || (is_callable('curl_init') && is_callable('curl_exec'))) {
+    if ( is_callable( 'stream_socket_client' )
+        || ( is_callable( 'curl_init' ) && is_callable( 'curl_exec' ) ) ) {
         return 'OK';
     }
     return '0';

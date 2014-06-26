@@ -42,6 +42,8 @@ HC_LOCK="$(mktemp)"
 ## curl or lftp
 HC_CURL="1"
 which lftp &> /dev/null && HC_CURL="0"
+## for printf decimals
+export LC_NUMERIC=C
 
 # prepare as multiplied integer without decimal point
 fullint() {
@@ -52,11 +54,11 @@ fullint() {
     local A_FULL
 
     # fixed number of decimals
-    LC_NUMERIC=C printf -v A_DEC "%.${DECIMALS}f" "$A"
+    printf -v A_DEC "%.${DECIMALS}f" "$A"
     # remove dot
     A_DEC="${A_DEC/./}"
     # trim leading zero
-    LC_NUMERIC=C printf "%.0f" "$A_DEC"
+    printf "%.0f" "$A_DEC"
 }
 
 add() {
@@ -73,14 +75,14 @@ add() {
     A_FULL="$(fullint "$A" "$DECIMALS")"
     B_FULL="$(fullint "$B" "$DECIMALS")"
     # should be at least DECIMALS digits
-    LC_NUMERIC=C printf -v SUM_FULL "%0${DECIMALS}d" $((A_FULL + B_FULL))
+    printf -v SUM_FULL "%0${DECIMALS}d" $((A_FULL + B_FULL))
 
     # stripping and .adding this many digits: DECIMALS
-    #old bash throws error: LC_NUMERIC=C printf "%.${DECIMALS}f" "${SUM_FULL:0:(-${DECIMALS})}.${SUM_FULL:(-${DECIMALS})}"
+    #old bash throws error: printf "%.${DECIMALS}f" "${SUM_FULL:0:(-${DECIMALS})}.${SUM_FULL:(-${DECIMALS})}"
     #slow: printf -v TRIMEND '?%.0s' $(seq 1 ${DECIMALS})
     printf -v TRIMEND "%*s" "$DECIMALS"
     TRIMEND="${TRIMEND// /?}"
-    LC_NUMERIC=C printf "%.${DECIMALS}f" "${SUM_FULL%$TRIMEND}.${SUM_FULL:(-${DECIMALS})}"
+    printf "%.${DECIMALS}f" "${SUM_FULL%$TRIMEND}.${SUM_FULL:(-${DECIMALS})}"
 }
 
 divide() {
@@ -96,17 +98,17 @@ divide() {
 
     A_FULL="$(fullint "$A" "$DECIMALS")"
     # multiply by 10^DECIMALS for precision
-    A_FULL="$((A_FULL * $(LC_NUMERIC=C printf "%.0f" "1e${DECIMALS}") ))"
+    A_FULL="$((A_FULL * $(printf "%.0f" "1e${DECIMALS}") ))"
 
     B_FULL="$(fullint "$B" "$DECIMALS")"
 
     # should be at least DECIMALS digits
-    LC_NUMERIC=C printf -v SUM_FULL "%0${DECIMALS}d" $((A_FULL / B_FULL))
+    printf -v SUM_FULL "%0${DECIMALS}d" $((A_FULL / B_FULL))
 
     # stripping and .adding this many digits: DECIMALS
     printf -v TRIMEND "%*s" "$DECIMALS"
     TRIMEND="${TRIMEND// /?}"
-    LC_NUMERIC=C printf "%.${DECIMALS}f" "${SUM_FULL%$TRIMEND}.${SUM_FULL:(-${DECIMALS})}"
+    printf "%.${DECIMALS}f" "${SUM_FULL%$TRIMEND}.${SUM_FULL:(-${DECIMALS})}"
 }
 
 # singleton echo
@@ -894,7 +896,7 @@ php_uid() {
     PHP_UID="$(php_query uid)"
 
     if [ "$PHP_UID" = 0 ]; then
-        error "PHP/FTP UID mismatch"
+        error "PHP/FTP UID unavailable/mismatch"
     else
         msg "PHP/FTP UID OK (${PHP_UID})"
         log_vars "PHPUID" "$PHP_UID"
