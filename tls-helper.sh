@@ -8,7 +8,7 @@
 ## lftpgnutls3 - lftp compiled with GnuTLS v3 from Debian wheezy source package
 ## lftpgnutls3-src - lftp compiled with GnuTLS v3 from upstream source
 ## lftpopenssl - lftp compiled with OpenSSL
-## gnutls-cli
+## gnutls-cli - compiled with GnuTLS v3
 ## openssl
 
 
@@ -35,8 +35,8 @@ start_header() {
 do_lftp() {
     local LFTP="$1"
 
-    "$LFTP" --version|head -n1
-    "$LFTP" --version|tail -n1
+    "$LFTP" --version | head -n 1
+    "$LFTP" --version | tail -n 1
     echo "========================"
     "$LFTP" -u "${HC_FTP_USER},${HC_FTP_PASSWORD}" \
         -e "debug; set ssl:ca-file ${CACERTS}; set ftp:ssl-force 1; ls" "${HC_FTP_HOST}"
@@ -68,7 +68,7 @@ lftp_openssl() {
 }
 
 gnutls_cli() {
-    h1 "gnutls-cli"
+    h1 "gnutls-cli GnuTLS 3"
     gnutls-cli --version | head -n1
     echo "========================"
     ret "AUTH TLS"

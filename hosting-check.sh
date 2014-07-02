@@ -5,7 +5,7 @@
 # Depends:  apt-get install lftp bind9-host whois
 # Depends2: apt-get install curl bind9-host whois
 # Extra:    pip install ansi2html
-# Version:  0.2
+# Version:  0.3
 # Author:   Viktor Szépe <viktor@szepe.net>
 # URL:      https://github.com/szepeviktor/hosting-check
 
@@ -28,7 +28,7 @@ HC_TIMEZONE="Europe/Budapest"
 
 #######################
 
-HC_VERSION="0.2"
+HC_VERSION="0.3"
 HC_FTP_USERPASS="${HC_FTP_USER},${HC_FTP_PASSWORD}"
 HC_SECRETKEY="$(echo "$RANDOM" | md5sum | cut -d' ' -f1)"
 HC_DOMAIN="$(sed -r 's|^.*[./]([^./]+\.[^./]+).*$|\1|' <<< "$HC_SITE")"
@@ -39,6 +39,7 @@ HC_UA='Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:24.0) Gecko/20140419 Firefox/
 HC_CABUNDLE="/etc/ssl/certs/ca-certificates.crt"
 HC_BENCHMARK_VALUES="$(mktemp)"
 HC_LOCK="$(mktemp)"
+HC_PROTOCOL="ftp://"
 ## curl or lftp
 HC_CURL="1"
 which lftp &> /dev/null && HC_CURL="0"
@@ -142,7 +143,7 @@ notice() {
 do_ftp() {
     #echo "[DBG] lftp -e $* -u $HC_FTP_USERPASS $HC_FTP_HOST" >&2
     lftp -e "set cmd:interactive off; set net:timeout 5; set net:max-retries 1; set net:reconnect-interval-base 2; set dns:order 'inet inet6'; $*" \
-        -u "$HC_FTP_USERPASS" "$HC_FTP_HOST" > /dev/null
+        -u "$HC_FTP_USERPASS" "${HC_PROTOCOL}${HC_FTP_HOST}" > /dev/null
 }
 
 do_curl() {
@@ -1066,26 +1067,49 @@ wordpress() {
     notice "WordPress autoload options ($(php_query wpoptions)) bytes"
 }
 
-## test SSL in FTP server: 0 - no SSL, 1 - invalid cert, 2 - valid cert
+## test SSL in FTP server: 0 - no SSL, 1 - invalid cert, 2 - valid cert, 3 - SFTP
 ftp_ssl() {
     local FTPSSL=""
     local FTP_LIST="recls [^.]*"
 
-    ## not local!
+    # not local!
     FTPSSL_COMMAND=""
 
+    ## SFTP (file transfer in SSH tunnel)
+    if [ "$HC_FTP_ENABLE_TLS" = 3 ]; then
+        HC_PROTOCOL="sftp://"
+
+        # lftp
+        if [ "$HC_CURL" = 0 ]; then
+            if do_ftp "${FTP_LIST}; exit"; then
+                FTPSSL="3"
+                FTPSSL_COMMAND="sftp://"
+                msg "SFTP connect OK"
+                log_vars "FTPSSL" "$FTPSSL"
+                log_vars "FTPSSLCOMMAND" "$FTPSSL_COMMAND"
+                notice "SFTP connect level (${FTPSSL})"
+                return
+            else
+                fatal "SFTP can NOT connect"
+            fi
+        fi
+    fi
+
+    # curl
     if [ "$HC_CURL" = 1 ]; then
-        FTPSSL="0"
-        FTPSSL_COMMAND="curl ftp://"
+        # SFTP
+        if [ "$HC_FTP_ENABLE_TLS" = 3 ]; then
+            FTPSSL="3"
+        else
+            FTPSSL="0"
+        fi
+        FTPSSL_COMMAND="curl ${HC_PROTOCOL}"
         log_vars "FTPSSL" "$FTPSSL"
         log_vars "FTPSSLCOMMAND" "$FTPSSL_COMMAND"
         notice "curl: FTP SSL connect level (${FTPSSL})"
-#FIXME lftp+gnutls2/3 fails to verify a valid cert
         ssl_check "FTPS" "21" "-starttls ftp"
         return
     fi
-
-#TODO support SFTP  `lftp sftp://SITE.NET/`
 
     ## without SSL
     if do_ftp "set ftp:ssl-allow off; ${FTP_LIST}; exit"; then
@@ -1095,6 +1119,8 @@ ftp_ssl() {
     else
         notice "FTP can NOT connect without SSL"
     fi
+
+#FIXME  lftp with gnutls2/3 fails to verify some valid certs
 
     ## SSL with invalid certificate
     if [ "$HC_FTP_ENABLE_TLS" = 1 ] \
@@ -1146,13 +1172,13 @@ ftp_upload() {
     if [ "$HC_CURL" = 1 ]; then
         # wp-config.php
         if [ -r ./wp-config.php ]; then
-            if ! do_curl -T "{./wp-config.php}" "ftp://${HC_FTP_HOST}${HC_FTP_WEBROOT}/wp-config.php"; then
+            if ! do_curl -T "{./wp-config.php}" "${HC_PROTOCOL}${HC_FTP_HOST}${HC_FTP_WEBROOT}/wp-config.php"; then
                 fatal "wp-config.php upload failure"
             fi
         fi
 
         FILELIST="$(find "${UNPACKDIR}/${HC_DIR}" -type f -printf "%p,")"
-        do_curl --ftp-create-dirs -T "{${FILELIST%,}}" "ftp://${HC_FTP_HOST}${HC_FTP_WEBROOT}/${HC_DIR}"
+        do_curl --ftp-create-dirs -T "{${FILELIST%,}}" "${HC_PROTOCOL}${HC_FTP_HOST}${HC_FTP_WEBROOT}/${HC_DIR}"
         RET="$?"
     else
         # wp-config.php
@@ -1199,7 +1225,7 @@ ftp_destruct() {
         while read FILE; do
             [ -z "${FILE//./}" ] && continue
             FILES+=( -Q "-DELE ${FILE}" )
-        done <<< "$(do_curl "ftp://${HC_FTP_HOST}${HC_FTP_WEBROOT}/${HC_DIR}" -l 2> /dev/null)"
+        done <<< "$(do_curl "${HC_PROTOCOL}${HC_FTP_HOST}${HC_FTP_WEBROOT}/${HC_DIR}" -l 2> /dev/null)"
         if ! [ $? = 0 ]; then
             error "curl: can NOT get file list"
             error "self distruct failed, DELETE '${HC_DIR}' MANUALLY!"
@@ -1208,7 +1234,7 @@ ftp_destruct() {
         fi
 
         ## delete all files one-by-one
-        do_curl "ftp://${HC_FTP_HOST}${HC_FTP_WEBROOT}/${HC_DIR}" "${FILES[@]}" > /dev/null
+        do_curl "${HC_PROTOCOL}${HC_FTP_HOST}${HC_FTP_WEBROOT}/${HC_DIR}" "${FILES[@]}" > /dev/null
         if ! [ $? = 0 ]; then
             error "curl: can NOT delete files"
             error "self distruct failed, DELETE '${HC_DIR}' MANUALLY!"
@@ -1217,7 +1243,7 @@ ftp_destruct() {
         fi
 
         ## delete dir
-        do_curl "ftp://${HC_FTP_HOST}${HC_FTP_WEBROOT}/" -Q "-RMD ${HC_DIR}" > /dev/null
+        do_curl "${HC_PROTOCOL}${HC_FTP_HOST}${HC_FTP_WEBROOT}/" -Q "-RMD ${HC_DIR}" > /dev/null
         if ! [ $? = 0 ]; then
             error "curl: can NOT delete ${HC_DIR} dir"
             error "self distruct failed, DELETE '${HC_DIR}' MANUALLY!"
@@ -1260,7 +1286,7 @@ manual() {
     ## web
     notice "certificate check: https://www.ssllabs.com/ssltest/analyze.html?d=${HC_HOST}&s=${HC_IP}"
     notice "W3C validator:  http://validator.w3.org/check?group=1&uri=${HC_SITE}"
-    notice "check Latin Extended-A characters: font files, webfonts (őűŐŰ€) and !cufon"
+    notice "check Latin Extended-A characters: font files/webfonts (őűŐŰ€) and overlapping text lines (ÚÚÚ qqq) and !cufon"
 #TODO  slimerjs + automated glyph detection  http://lists.nongnu.org/archive/html/freetype/2014-06/threads.html
     notice "waterfall:  https://www.webpagetest.org/"
     notice "emulate mod_pagespeed:  https://www.webpagetest.org/compare"
@@ -1358,6 +1384,7 @@ tohtml() {
     php_cpu
     php_disk
 #TODO mysqli benchmark
+#TODO ipv6 support (connect, IP lookup)
 
     ## manual todos
     manual

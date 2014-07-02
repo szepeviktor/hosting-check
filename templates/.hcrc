@@ -2,7 +2,7 @@
 # Default=""
 # Name='Site URL'
 # Description='Site URL begins with protocol (http://) end with a slash ("/")'
-# Validator='^https\{0,1\}://.*/$'
+# Validator='^https\?://.\{5,50\}/$'
 # Output='%s="%s"'
 #
 ## URL
@@ -42,8 +42,8 @@ HC_FTP_PASSWORD='ftp_password'
 # Variable="HC_FTP_ENABLE_TLS"
 # Default="1"
 # Name="FTP TLS detection"
-# Description='Enter "1" to enable TLS detection in FTP connections, "0" to disable'
-# Validator='^0$\|^1$'
+# Description='"1" enables TLS detection in FTP, "0" disables, "3" for SFTP (file transfer over SSH)'
+# Validator='^[013]$'
 # Output='%s="%d"'
 #
 ## enable TLS detection in FTP connection
@@ -62,7 +62,7 @@ HC_FTP_WEBROOT="/public_html"
 # Variable="HC_MAILSERVER_IP"
 # Default=""
 # Name="Main mailserver"
-# Description="IP address of the mailserver you use besides the hosting's one"
+# Description="IP address of the other mailserver you use besides the hosting's one"
 # Validator='^\([0-9]\{1,3\}\.\)\{3\}[0-9]\{1,3\}$'
 # Output='%s="%s"'
 #
@@ -73,7 +73,7 @@ HC_MAILSERVER_IP=""
 # Default="Europe/Budapest"
 # Name="Time zone"
 # Description='Local time zone for PHP'
-# Validator='^[A-Z][a-zA-Z_]*/[A-Z][a-zA-Z_]*$'
+# Validator='^[A-Z][a-zA-Z_]\+/[A-Z][a-zA-Z_]\+$'
 # Output='%s="%s"'
 #
 ## Time Zone

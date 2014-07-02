@@ -2,7 +2,7 @@
 
 /**
  * Hosting (webspace) checker PHP query class + main
- * v0.2
+ * v0.3
  */
 
 // not in PHP 5.2
@@ -66,7 +66,88 @@ private function expand_shorthand($val) {
     return $bytes;
 }
 
-//////////////// ^_Private, v_Public ///////////////
+private function stress_steps($iter = 25000000) {
+    $start = $this->unow();
+
+    $steps = 0;
+    for ($i = 0; $i < $iter; $i += 1) {
+        $steps += $i;
+    }
+    return $this->unow() - $start;
+}
+
+private function stress_shuffle($iter = 500000) {
+    $start = $this->unow();
+
+    $hash = 0;
+    for ($i = 0; $i < $iter; $i += 1) {
+        // XOR
+        $hash ^= md5(substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, rand(1,10)));
+    }
+    return $this->unow() - $start;
+}
+
+private function stress_aes($iter = 2500) {
+    $start = $this->unow();
+
+    $data = md5(substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, rand(1,10)));
+    $keyhash = md5('secret key');
+    $ivsize = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC);
+    $iv = mcrypt_create_iv($ivsize, MCRYPT_DEV_URANDOM);
+
+    $cipherdata = '';
+    for ($i = 0; $i < $iter; $i += 1) {
+        // XOR
+        $cipherdata ^= mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $keyhash, $data, MCRYPT_MODE_CBC, $iv);
+    }
+    return $this->unow() - $start;
+}
+
+private function dumpfile( $filename, $dumpsize ) {
+    $onemega = '';
+    for ( $i = 0; $i < 1048576; $i += 1 ) {
+        // prevent compression
+        $onemega .= chr( rand( 1, 255 ) );
+    }
+
+    for ( $i = 0; $i < $dumpsize; $i += 1 ) {
+        if ( ! file_put_contents( $filename, $onemega, FILE_APPEND ) ) {
+            unlink( $filename );
+            return false;
+        };
+    }
+
+    return true;
+}
+
+private function seeks( $filename, $seeks = 1000000 ) {
+    // for fgets
+    $size = filesize( $filename ) - 4096;
+
+    // smaller than 10MB
+    if ( $size === false || $size < 10485760) {
+        return false;
+    }
+
+    $handle = fopen( $filename, 'r' );
+    if ( $handle === false ) {
+        return false;
+    }
+
+    for ( $i = 0; $i < $seeks; $i += 1 ) {
+        fseek( $handle, rand( 0, $size ) );
+        fgets( $handle, 4096 );
+    }
+
+    fclose($handle);
+    unlink($filename);
+
+    return true;
+}
+
+
+//////////////// ^^^ Private,  vvv Public ///////////////
+
 
 public function fail() {
     print '0';
@@ -307,44 +388,6 @@ public function cpuinfo() {
     }
 }
 
-private function stress_steps($iter = 25000000) {
-    $start = $this->unow();
-
-    $steps = 0;
-    for ($i = 0; $i < $iter; $i += 1) {
-        $steps += $i;
-    }
-    return $this->unow() - $start;
-}
-
-private function stress_shuffle($iter = 500000) {
-    $start = $this->unow();
-
-    $hash = 0;
-    for ($i = 0; $i < $iter; $i += 1) {
-        // XOR
-        $hash ^= md5(substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, rand(1,10)));
-    }
-    return $this->unow() - $start;
-}
-
-private function stress_aes($iter = 2500) {
-    $start = $this->unow();
-
-    $data = md5(substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, rand(1,10)));
-    $keyhash = md5('secret key');
-    $ivsize = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_256, MCRYPT_MODE_CBC);
-    $iv = mcrypt_create_iv($ivsize, MCRYPT_DEV_URANDOM);
-
-    $cipherdata = '';
-    for ($i = 0; $i < $iter; $i += 1) {
-        // XOR
-        $cipherdata ^= mcrypt_encrypt(MCRYPT_RIJNDAEL_256, $keyhash, $data, MCRYPT_MODE_CBC, $iv);
-    }
-    return $this->unow() - $start;
-}
-
-
 public function stresscpu() {
     if (is_int(ini_get('max_execution_time')) && ini_get('max_execution_time') < 20) {
         if (! ini_set('max_execution_time', 20)) {
@@ -357,48 +400,6 @@ public function stresscpu() {
 
     // iteration ratio:  steps:shuffle:eas ~ 10000:200:1
     return sprintf("%.3f\t%.3f\t%.3f", $this->stress_steps(), $this->stress_shuffle() ,$this->stress_aes());
-}
-
-private function dumpfile( $filename, $dumpsize ) {
-    $onemega = '';
-    for ( $i = 0; $i < 1048576; $i += 1 ) {
-        // prevent compression
-        $onemega .= chr( rand( 1, 255 ) );
-    }
-
-    for ( $i = 0; $i < $dumpsize; $i += 1 ) {
-        if ( ! file_put_contents( $filename, $onemega, FILE_APPEND ) ) {
-            unlink( $filename );
-            return false;
-        };
-    }
-
-    return true;
-}
-
-private function seeks( $filename, $seeks = 1000000 ) {
-    // for fgets
-    $size = filesize( $filename ) - 4096;
-
-    // smaller than 10MB
-    if ( $size === false || $size < 10485760) {
-        return false;
-    }
-
-    $handle = fopen( $filename, 'r' );
-    if ( $handle === false ) {
-        return false;
-    }
-
-    for ( $i = 0; $i < $seeks; $i += 1 ) {
-        fseek( $handle, rand( 0, $size ) );
-        fgets( $handle, 4096 );
-    }
-
-    fclose($handle);
-    unlink($filename);
-
-    return true;
 }
 
 public function accesstime( $filename = './accestime.dump', $dumpsize = 1000 ) {
@@ -436,11 +437,12 @@ public function accesstime( $filename = './accestime.dump', $dumpsize = 1000 ) {
     return sprintf( "%.3f\t%.3f", $dumptime, $seektime );
 }
 
-//class
+//class ends here
 }
 
 
 /** main **/
+
 
 // hide errors
 error_reporting( 0 );
