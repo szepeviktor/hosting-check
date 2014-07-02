@@ -3,8 +3,15 @@ Hosting checker
 
 Shared hosting service (webspace) checker
 
-This **shell script** runs on a terminal (Linux, Cygwin, OS X) and checks any FTP/PHP/MySQL hosting service/webspace
+This **shell script** runs on your terminal (Linux, Cygwin, OS X) and checks any FTP/PHP/MySQL hosting service/webspace
 by uploading PHP code and downloading its output. No SSH access is needed for the hosting service, it runs on a separate terminal.
+
+#### You can use it to
+
+- choose hosting provider
+- fix errors in an existing site
+- prepare for traffic spikes
+- reduce spam
 
 ## Checks
 
@@ -59,7 +66,7 @@ On Cygwin use [apt-cyg](https://github.com/transcode-open/apt-cyg) and install n
 
 `apt-cyg install ncurses lftp bind-utils whois`
 
-## Stress tests (seconds)
+## Stress tests
 
 | Hosting company | PHP    | steps  | shuffle | AES    |
 | --------------- | ------ | ------:| -------:| ------:|
@@ -69,8 +76,9 @@ On Cygwin use [apt-cyg](https://github.com/transcode-open/apt-cyg) and install n
 | mc              | 5.3    |  7.810 |   7.396 |  5.288 |
 | wpe             | 5.3    |  2.962 |   2.500 |  0.963 |
 
-Company names are hidden intentionally.
+Company names are hidden intentionally. Times are in seconds.
 
 ### Contribution
 
 You are more than welcome to test drive this script and attach the output in an [issue](https://github.com/szepeviktor/hosting-check/issues/new).
+
