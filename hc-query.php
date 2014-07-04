@@ -11,16 +11,28 @@
 
 define('LOGDIRNAME', 'log');
 define('LOGFILENAME', 'error.log');
-define('LOGTEMPLATE', "//date_default_timezone_set('Europe/Budapest');
+define('LOGTEMPLATE', "/* shared hosting error logging */
 ini_set('error_log', '%s');
 ini_set('log_errors', 1);
+
+//date_default_timezone_set('Europe/Budapest');
+
 /*
+/* upload and session directory */
 ini_set('upload_tmp_dir', '%s/tmp');
 ini_set('session.save_path', '%s/session');
+// comment out after first use
 mkdir('%s/tmp', 0700);
 mkdir('%s/session', 0700);
 */
 
+/* WordPress defines */
+/*
+// for different FTP/PHP UID
+define('FS_METHOD', 'direct');
+define('FS_CHMOD_DIR', (0775 & ~ umask()));
+define('FS_CHMOD_FILE', (0664 & ~ umask()));
+*/
 //define('WP_MAX_MEMORY_LIMIT', '255M');
 define('WP_POST_REVISIONS', 10);
 define('WP_DEBUG', true);
@@ -30,14 +42,11 @@ define('WP_DEBUG', true);
 /* some themes will refuse to display their option panel */
 define('DISALLOW_FILE_EDIT', true);
 //define('WP_CACHE', true);
+/* only when Linux cron or remote cron call is set up */
 define('DISABLE_WP_CRON', true);
 define('AUTOMATIC_UPDATER_DISABLED', true);
 define('WP_USE_EXT_MYSQL', false);
-/* different UID
-define('FS_METHOD', 'direct');
-define('FS_CHMOD_DIR', (0775 & ~ umask()));
-define('FS_CHMOD_FILE', (0664 & ~ umask()));
-*/
+// comment out after first use
 error_log('logging-test');\n");
 
 
