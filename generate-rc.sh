@@ -54,8 +54,8 @@ dnsquery() {
     # empty host
     [ -z "$HOST" ] && return 1
 
-    # first record only
-    IP="$(LC_ALL=C host -t "$TYPE" "$HOST" 2> /dev/null | head -n 1)"
+    # last record only
+    IP="$(LC_ALL=C host -t "$TYPE" "$HOST" 2> /dev/null | tail -n 1)"
     if ! [ -z "$IP" ] && [ "$IP" = "${IP/ not found:/}" ] && [ "$IP" = "${IP/ has no /}" ]; then
         case "$TYPE" in
             A)

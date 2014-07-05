@@ -419,8 +419,8 @@ dnsquery() {
     # empty host
     [ -z "$HOST" ] && return 1
 
-    # first record only
-    IP="$(LC_ALL=C host -t "$TYPE" "$HOST" 2> /dev/null | head -n 1)"
+    # last  record only, first may be a CNAME
+    IP="$(LC_ALL=C host -t "$TYPE" "$HOST" 2> /dev/null | tail -n 1)"
     if ! [ -z "$IP" ] && [ "$IP" = "${IP/ not found:/}" ] && [ "$IP" = "${IP/ has no /}" ]; then
         case "$TYPE" in
             A)
@@ -1310,7 +1310,7 @@ manual() {
     notice "add domain name to serverwatch/frontpage"
 #TODO  frontpage good regex: '</html>'
 #TODO  bad regex: 'sql\| error\| notice\|warning\|unknown\|denied\|exception'
-    notice "check root files:  ${HC_SITE}robots.txt  ${HC_SITE}sitemap.xml ${HC_SITE}sitemap_index.xml"
+    notice "check root files:  ${HC_SITE}robots.txt  ${HC_SITE}sitemap.xml ${HC_SITE}sitemap_index.xml etc!"
     notice "set up tripwire:  https://github.com/lucanos/Tripwire"
     notice "register pingdom:  https://www.pingdom.com/free/"
 #TODO  can-send-email-test/day
@@ -1383,7 +1383,7 @@ tohtml() {
     php_cpuinfo
     php_cpu
     php_disk
-#TODO mysqli benchmark
+#TODO mysqli benchmark, db-collation:  SELECT DEFAULT_COLLATION_NAME FROM information_schema.SCHEMATA WHERE schema_name = "$DB_NAME"
 #TODO ipv6 support (connect, IP lookup)
 
     ## manual todos
