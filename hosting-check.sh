@@ -541,6 +541,7 @@ dns_servers() {
         error "nameservers are in the SAME data center"
     else
         msg "nameservers OK"
+        notice "use exclusive (DNS-only) nameservers (with no webservers on them)"
     fi
 
     ## Hungarian "Domi"
