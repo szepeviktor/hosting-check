@@ -913,7 +913,7 @@ php_sapi() {
     PHP_SAPI="$(php_query sapi)"
 
     # complete pattern!
-    if grep -q "apache2handler\|cgi-fcgi" <<< "$PHP_SAPI"; then
+    if grep -q "apache2handler\|cgi-fcgi\|fpm-fcgi" <<< "$PHP_SAPI"; then
         msg "PHP Server API OK (${PHP_SAPI})"
     else
         error "UNKNOWN PHP Server API (${PHP_SAPI})"
@@ -1284,17 +1284,19 @@ manual() {
     notice "check MySQL table engine:  SHOW ENGINES;"
     notice "phpmyadmin-cli -l PMA_URL --password=DB_PASSWORD -u DB_USER -e 'SHOW ENGINES;' DB_NAME|tail -n+2|csvtool cat -u TAB -|cut -f1"
 
-    ## web
+    ## cert
     notice "certificate check: https://www.ssllabs.com/ssltest/analyze.html?d=${HC_HOST}&s=${HC_IP}"
+
+    ## website
     notice "W3C validator:  http://validator.w3.org/check?group=1&uri=${HC_SITE}"
-    notice "check Latin Extended-A characters: font files/webfonts (őűŐŰ€) and overlapping text lines (ÚÚÚ qqq) and !cufon"
-#TODO  slimerjs + automated glyph detection  http://lists.nongnu.org/archive/html/freetype/2014-06/threads.html
     notice "waterfall:  https://www.webpagetest.org/"
-    notice "emulate mod_pagespeed:  https://www.webpagetest.org/compare"
     notice "PageSpeed:  http://developers.google.com/speed/pagespeed/insights/?url=${HC_SITE}"
     notice "check hAtom:  http://www.google.com/webmasters/tools/richsnippets?q=${HC_SITE}"
+#TODO  slimerjs + automated glyph detection  http://lists.nongnu.org/archive/html/freetype/2014-06/threads.html
+    notice "emulate mod_pagespeed:  https://www.webpagetest.org/compare"
     notice "check included Javascripts"
     notice "check FOUC, image loading on mouse action (e.g. hover, click)"
+    notice "check Latin Extended-A characters: font files/webfonts (őűŐŰ€) and overlapping text lines (ÚÚÚ qqq) and !cufon"
     notice "Javascript errors (slimerjs), 404s (slimerjs/gositemap.sh)"
     notice "minify CSS, JS, optimize images (progressive JPEGs)"
     notice "set up WMT:  https://www.google.com/webmasters/tools/home?hl=en"
@@ -1302,6 +1304,8 @@ manual() {
     notice "Google Analytics/Universal Analytics: js, demographics, goals, Remarketing Tag"
     notice "set up page cache"
     notice "check main keyword Google SERP snippet:  https://www.google.hu/search?hl=hu&q=site:${HC_SITE}"
+    notice "setup WordPress in a subdirectory to prevent easy bot login"
+    notice "allow login from your country only (Maxmind GeoIP, ludost)"
 
     ## monitoring
     notice "no ISP cron, remote WP-cron:  8,38 * * * *  www-data  /usr/bin/wget -qO- ${HC_SITE}wp-cron.php"
@@ -1311,7 +1315,16 @@ manual() {
     notice "add domain name to serverwatch/frontpage"
 #TODO  frontpage good regex: '</html>'
 #TODO  bad regex: 'sql\| error\| notice\|warning\|unknown\|denied\|exception'
-    notice "check root files:  ${HC_SITE}robots.txt  ${HC_SITE}sitemap.xml ${HC_SITE}sitemap_index.xml etc!"
+    notice "check root files:  ${HC_SITE}robots.txt"
+    notice "check root files:  ${HC_SITE}favicon.ico"
+    notice "check root files:  ${HC_SITE}apple-touch-icon.png"
+    notice "check root files:  ${HC_SITE}apple-touch-icon-precomposed.png"
+    notice "check root files:  ${HC_SITE}browserconfig.xml"
+    notice "check root files:  ${HC_SITE}crossdomain.xml"
+    notice "check root files:  /sitemap*"
+    notice "check root files:  /google*.html"
+
+    notice "robots.txt, sitemap*  X-Robots-Tag: noindex, follow"
     notice "set up tripwire:  https://github.com/lucanos/Tripwire"
     notice "register pingdom:  https://www.pingdom.com/free/"
 #TODO  can-send-email-test/day

@@ -9,45 +9,48 @@
 //namespace HostingCheck;
 
 
-define('LOGDIRNAME', 'log');
-define('LOGFILENAME', 'error.log');
-define('LOGTEMPLATE', "/* shared hosting error logging */
-ini_set('error_log', '%s');
-ini_set('log_errors', 1);
+define( 'LOGDIRNAME', 'log' );
+define( 'LOGFILENAME', 'error.log' );
+define( 'LOGTEMPLATE', "/* shared hosting error logging */
+ini_set( 'error_log', '%s' );
+ini_set( 'log_errors', 1 );
 
 //date_default_timezone_set('Europe/Budapest');
 
 /*
 // upload and session directory
-ini_set('upload_tmp_dir', '%s/tmp');
-ini_set('session.save_path', '%s/session');
+ini_set( 'upload_tmp_dir', '%s/tmp' );
+ini_set( 'session.save_path', '%s/session' );
 // comment out after first use
-mkdir('%s/tmp', 0700);
-mkdir('%s/session', 0700);
+mkdir( '%s/tmp', 0700 );
+mkdir( '%s/session', 0700 );
 */
 
 /* WordPress defines */
 /*
 // for different FTP/PHP UID
-define('FS_METHOD', 'direct');
-define('FS_CHMOD_DIR', (0775 & ~ umask()));
-define('FS_CHMOD_FILE', (0664 & ~ umask()));
+define( 'FS_METHOD', 'direct' );
+define( 'FS_CHMOD_DIR', (0775 & ~ umask()) );
+define( 'FS_CHMOD_FILE', (0664 & ~ umask()) );
 */
-//define('WP_MAX_MEMORY_LIMIT', '255M');
-define('WP_POST_REVISIONS', 10);
-define('WP_DEBUG', true); error_reporting(E_ALL | E_STRICT);
+//define( 'WP_MAX_MEMORY_LIMIT', '255M' );
+define( 'WP_USE_EXT_MYSQL', false );
+define( 'WP_POST_REVISIONS', 10 );
+// WP in a hidden subdir
+//define( 'WP_CONTENT_DIR', '%s' );
+//define( 'WP_CONTENT_URL', '%s' );
+define( 'WP_DEBUG', true ); error_reporting( E_ALL | E_STRICT );
 
 //  production only
-//define('WP_DEBUG', false);
+//define( 'WP_DEBUG', false );
 // some themes will refuse to display their option panel
-define('DISALLOW_FILE_EDIT', true);
-//define('WP_CACHE', true);
+define( 'DISALLOW_FILE_EDIT', true );
+//define( 'WP_CACHE', true );
+define( 'AUTOMATIC_UPDATER_DISABLED', true );
 // only when Linux cron or remote cron call is set up
-define('DISABLE_WP_CRON', true);
-define('AUTOMATIC_UPDATER_DISABLED', true);
-define('WP_USE_EXT_MYSQL', false);
+define( 'DISABLE_WP_CRON', true );
 // comment out after first use
-error_log('logging-test');\n");
+error_log( 'logging-test' );\n" );
 
 
 
@@ -308,7 +311,7 @@ public function logfile() {
 
         // 'hosting-check' . '/hc-query.php'
         $me = basename(dirname($_SERVER['SCRIPT_FILENAME'])) . '/hc-query.php';
-        // ends with
+        // correct docroot from SCRIPT_FILENAME
         if (substr($_SERVER['SCRIPT_FILENAME'], -strlen($me)) === $me) {
             $docroot = substr($_SERVER['SCRIPT_FILENAME'], 0, -strlen($me));
         }
@@ -335,8 +338,12 @@ public function logfile() {
         return '0';
     }
 
+    // WP in a hidden subdirectory
+    $wp_content = $docroot . '/static';
+    $wp_content_url = 'http://' . $_SERVER['HTTP_HOST'] . '/static';
+
     chmod($logfile, 0600);
-    return sprintf(LOGTEMPLATE, $logfile, $logpath, $logpath, $logpath, $logpath);
+    return sprintf(LOGTEMPLATE, $logfile, $logpath, $logpath, $logpath, $logpath, $wp_content, $wp_content_url);
 }
 
 public function safe() {

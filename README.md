@@ -54,17 +54,21 @@ by uploading PHP code and downloading its output. No SSH access is needed for th
 ## Installation
 
 1. download: `git clone https://github.com/szepeviktor/hosting-check.git && cd hosting-check`
-1. perms:    `chmod +x hosting-check.sh generate-rc.sh`
-1. install:  lftp (curl is not a full featured fallback)
+1. install:  lftp (curl is not a full-featured fallback)
 1. settings: `./generate-rc.sh` will question you
-1. db vars:  you can have a WordPress installation
+1. db vars:  you can have a WordPress installation (wp-config.php will be read)
 1. start:    `./hosting-check.sh`
 
 ### Cygwin
 
-On Cygwin use [apt-cyg](https://github.com/transcode-open/apt-cyg) and install ncurses beside lftp, bind-utils and whois.
+On Cygwin use [apt-cyg](https://github.com/transcode-open/apt-cyg) and install lftp beside ncurses,
+wget, bind-utils, util-linux and whois.
 
-`apt-cyg install ncurses lftp bind-utils whois`
+`apt-cyg install ncurses wget lftp bind-utils util-linux whois`
+
+To clone this GitHub repo you need
+
+`apt-cyg git libcurl4`
 
 ## Stress tests
 
