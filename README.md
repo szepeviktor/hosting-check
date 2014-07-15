@@ -43,7 +43,7 @@ by uploading PHP code and downloading its output. No SSH access is needed for th
 - disk benchmarks
 - MySQL benchmark (TODO)
 - total size of WordPress "autoload" options
-- and a lot of manual checks (notices, links)
+- and a lot of [manual checks](https://github.com/szepeviktor/hosting-check/blob/master/hosting-check.sh#L1267) (notices, links)
 
 ## Output types
 
