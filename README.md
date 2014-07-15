@@ -64,11 +64,11 @@ by uploading PHP code and downloading its output. No SSH access is needed for th
 On Cygwin use [apt-cyg](https://github.com/transcode-open/apt-cyg) and install lftp beside ncurses,
 wget, bind-utils, util-linux and whois.
 
-`apt-cyg install ncurses wget lftp bind-utils util-linux whois`
+`apt-cyg install  ncurses wget lftp bind-utils util-linux whois`
 
 To clone this GitHub repo you need
 
-`apt-cyg git libcurl4`
+`apt-cyg install  git libcurl4`
 
 ## Stress tests
 
