@@ -13,11 +13,21 @@ HC_SITE="http://SITE.URL/"
 # Default="$(rev_hostname)"
 # Name='FTP hostname'
 # Description='Enter the REAL host name of the FTP server'
-# Validator='^[a-zA-Z0-9.-]\{5,50\}$'
+# Validator='^[a-zA-Z0-9.-]\{5,65\}$'
 # Output='%s="%s"'
 #
 ## FTP access
 HC_FTP_HOST="s10.hosting.prov"
+
+# Variable=HC_FTP_PORT
+# Default="21"
+# Name='FTP port number'
+# Description='Enter the port number of the the FTP server'
+# Validator='^[0-9]\{1,5\}$'
+# Output='%s="%s"'
+#
+## FTP port
+HC_FTP_PORT="2222"
 
 # Variable="HC_FTP_USER"
 # Default=""
@@ -52,8 +62,8 @@ HC_FTP_ENABLE_TLS="1"
 # Variable="HC_FTP_WEBROOT"
 # Default="/public_html"
 # Name="Document root"
-# Description='Relative webroot directory should begin with "/"'
-# Validator='^/'
+# Description='Relative webroot directory often begins with "/"'
+# Validator='^'
 # Output='%s="%s"'
 #
 ## document root (webroot)

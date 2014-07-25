@@ -45,6 +45,7 @@ define( 'WP_DEBUG', true ); error_reporting( E_ALL | E_STRICT );
 //define( 'WP_DEBUG', false );
 // some themes will refuse to display their option panel
 define( 'DISALLOW_FILE_EDIT', true );
+//define( 'DISALLOW_FILE_MODS', true );
 //define( 'WP_CACHE', true );
 define( 'AUTOMATIC_UPDATER_DISABLED', true );
 // only when Linux cron or remote cron call is set up

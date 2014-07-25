@@ -80,6 +80,7 @@ To clone this GitHub repo you need
 | mc              | 5.3    |  7.810 |   7.396 |  5.288 |
 | wpe             | 5.3    |  2.962 |   2.500 |  0.963 |
 | mc-cluster      | 5.3    |  1.983 |   1.924 |  1.095 |
+| pan             | 5.5    |  1.696 |   1.425 |  0.494 |
 
 Company names are hidden intentionally. Times are in seconds.
 

@@ -16,6 +16,7 @@
 HC_SITE="http://SITE.URL/"
 ## FTP access
 HC_FTP_HOST="FTPHOST"
+HC_FTP_PORT="21"
 HC_FTP_WEBROOT="/public_html"
 HC_FTP_USER="FTPUSER"
 HC_FTP_PASSWORD='FTPPASSWORD'
@@ -143,7 +144,7 @@ notice() {
 do_ftp() {
     #echo "[DBG] lftp -e $* -u $HC_FTP_USERPASS $HC_FTP_HOST" >&2
     lftp -e "set cmd:interactive off; set net:timeout 5; set net:max-retries 1; set net:reconnect-interval-base 2; set dns:order 'inet inet6'; $*" \
-        -u "$HC_FTP_USERPASS" "${HC_PROTOCOL}${HC_FTP_HOST}" > /dev/null
+        -u "$HC_FTP_USERPASS" "${HC_PROTOCOL}${HC_FTP_HOST}:${HC_FTP_PORT}" > /dev/null
 }
 
 do_curl() {
@@ -1084,7 +1085,7 @@ ftp_ssl() {
         if [ "$HC_CURL" = 0 ]; then
             if do_ftp "${FTP_LIST}; exit"; then
                 FTPSSL="3"
-                FTPSSL_COMMAND="sftp://"
+                FTPSSL_COMMAND=""
                 msg "SFTP connect OK"
                 log_vars "FTPSSL" "$FTPSSL"
                 log_vars "FTPSSLCOMMAND" "$FTPSSL_COMMAND"
@@ -1173,13 +1174,13 @@ ftp_upload() {
     if [ "$HC_CURL" = 1 ]; then
         # wp-config.php
         if [ -r ./wp-config.php ]; then
-            if ! do_curl -T "{./wp-config.php}" "${HC_PROTOCOL}${HC_FTP_HOST}${HC_FTP_WEBROOT}/wp-config.php"; then
+            if ! do_curl -T "{./wp-config.php}" "${HC_PROTOCOL}${HC_FTP_HOST}:${HC_FTP_PORT}${HC_FTP_WEBROOT}/wp-config.php"; then
                 fatal "wp-config.php upload failure"
             fi
         fi
 
         FILELIST="$(find "${UNPACKDIR}/${HC_DIR}" -type f -printf "%p,")"
-        do_curl --ftp-create-dirs -T "{${FILELIST%,}}" "${HC_PROTOCOL}${HC_FTP_HOST}${HC_FTP_WEBROOT}/${HC_DIR}"
+        do_curl --ftp-create-dirs -T "{${FILELIST%,}}" "${HC_PROTOCOL}${HC_FTP_HOST}:${HC_FTP_PORT}${HC_FTP_WEBROOT}/${HC_DIR}"
         RET="$?"
     else
         # wp-config.php
@@ -1226,7 +1227,7 @@ ftp_destruct() {
         while read FILE; do
             [ -z "${FILE//./}" ] && continue
             FILES+=( -Q "-DELE ${FILE}" )
-        done <<< "$(do_curl "${HC_PROTOCOL}${HC_FTP_HOST}${HC_FTP_WEBROOT}/${HC_DIR}" -l 2> /dev/null)"
+        done <<< "$(do_curl "${HC_PROTOCOL}${HC_FTP_HOST}:${HC_FTP_PORT}${HC_FTP_WEBROOT}/${HC_DIR}" -l 2> /dev/null)"
         if ! [ $? = 0 ]; then
             error "curl: can NOT get file list"
             error "self distruct failed, DELETE '${HC_DIR}' MANUALLY!"
@@ -1235,7 +1236,7 @@ ftp_destruct() {
         fi
 
         ## delete all files one-by-one
-        do_curl "${HC_PROTOCOL}${HC_FTP_HOST}${HC_FTP_WEBROOT}/${HC_DIR}" "${FILES[@]}" > /dev/null
+        do_curl "${HC_PROTOCOL}${HC_FTP_HOST}:${HC_FTP_PORT}${HC_FTP_WEBROOT}/${HC_DIR}" "${FILES[@]}" > /dev/null
         if ! [ $? = 0 ]; then
             error "curl: can NOT delete files"
             error "self distruct failed, DELETE '${HC_DIR}' MANUALLY!"
@@ -1244,7 +1245,7 @@ ftp_destruct() {
         fi
 
         ## delete dir
-        do_curl "${HC_PROTOCOL}${HC_FTP_HOST}${HC_FTP_WEBROOT}/" -Q "-RMD ${HC_DIR}" > /dev/null
+        do_curl "${HC_PROTOCOL}${HC_FTP_HOST}:${HC_FTP_PORT}${HC_FTP_WEBROOT}/" -Q "-RMD ${HC_DIR}" > /dev/null
         if ! [ $? = 0 ]; then
             error "curl: can NOT delete ${HC_DIR} dir"
             error "self distruct failed, DELETE '${HC_DIR}' MANUALLY!"
