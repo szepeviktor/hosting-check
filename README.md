@@ -72,16 +72,16 @@ To clone this GitHub repo you need
 
 ## Stress tests
 
-| Hosting company | PHP    | steps  | shuffle | AES    |
-| --------------- | ------ | ------:| -------:| ------:|
-| AMD FX-6300     | 5.4.28 |  4.426 |   4.233 |  4.187 |
-| td              | 5.4    |  9.112 |  12.053 |  7.854 |
-| sh              | 5.3    | 11.160 |   8.667 |  1.397 |
-| mc              | 5.3    |  7.810 |   7.396 |  5.288 |
-| wpe             | 5.3    |  2.962 |   2.500 |  0.963 |
-| mc-cluster      | 5.3    |  1.983 |   1.924 |  1.095 |
-| pan             | 5.5    |  1.696 |   1.425 |  0.494 |
-| for             | 5.4    |  1.344 |   1.015 |  0.279 |
+| Hosting company | PHP | steps  | shuffle | AES    |
+| --------------- | --- | ------:| -------:| ------:|
+| AMD FX-6300     | 5.4 |  1.139 |   1.074 |  1.169 |
+| ole             | 5.4 |  1.677 |   1.809 |  0.479 |
+| td              | 5.4 |  0.818 |   0.889 |  0.653 |
+| sh              | 5.3 |  2.823 |   2.048 |  0.329 |
+| wpe             | 5.3 |  2.962 |   2.500 |  0.963 |
+| mc-cluster      | 5.3 |  1.983 |   1.924 |  1.095 |
+| pan             | 5.5 |  1.696 |   1.425 |  0.494 |
+| for             | 5.4 |  1.344 |   1.015 |  0.279 |
 
 **steps** counts from 1 to 25 million, **shuffle** shuffles and calculates md5 sum of a string half million times,
 **AES** encrypts an md5 sum 2500 times. You can find the source in [hc-query.php](https://github.com/szepeviktor/hosting-check/blob/master/hc-query.php#L82-L117)
