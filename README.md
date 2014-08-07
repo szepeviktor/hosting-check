@@ -83,6 +83,7 @@ To clone this GitHub repo you need
 | pan             | 5.5 |  1.696 |   1.425 |  0.494 |
 | for             | 5.4 |  1.344 |   1.015 |  0.279 |
 | lin             | 5.4 |  1.102 |   1.087 |  0.220 |
+| sh-os           | 5.5 |  0.805     0.605 |  0.133 |
 
 **steps** counts from 1 to 25 million, **shuffle** shuffles and calculates md5 sum of a string half million times,
 **AES** encrypts an md5 sum 2500 times. You can find the source in [hc-query.php](https://github.com/szepeviktor/hosting-check/blob/master/hc-query.php#L82-L117)
