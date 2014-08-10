@@ -51,9 +51,7 @@ export LC_NUMERIC=C
 fullint() {
     local A="$1"
     local DECIMALS="$2"
-    local A_INT
     local A_DEC
-    local A_FULL
 
     # fixed number of decimals
     printf -v A_DEC "%.${DECIMALS}f" "$A"
@@ -70,7 +68,7 @@ add() {
     local A_FULL
     local B_FULL
     local SUM_FULL
-    local TRIMEND
+    local TRIM_END
 
     [ -z "$DECIMALS" ] && DECIMALS="3"
 
@@ -81,10 +79,10 @@ add() {
 
     # stripping and .adding this many digits: DECIMALS
     #old bash throws error: printf "%.${DECIMALS}f" "${SUM_FULL:0:(-${DECIMALS})}.${SUM_FULL:(-${DECIMALS})}"
-    #slow: printf -v TRIMEND '?%.0s' $(seq 1 ${DECIMALS})
-    printf -v TRIMEND "%*s" "$DECIMALS"
-    TRIMEND="${TRIMEND// /?}"
-    printf "%.${DECIMALS}f" "${SUM_FULL%$TRIMEND}.${SUM_FULL:(-${DECIMALS})}"
+    #slow: printf -v TRIM_END '?%.0s' $(seq 1 ${DECIMALS})
+    printf -v TRIM_END "%*s" "$DECIMALS"
+    TRIM_END="${TRIM_END// /?}"
+    printf "%.${DECIMALS}f" "${SUM_FULL%$TRIM_END}.${SUM_FULL:(-${DECIMALS})}"
 }
 
 divide() {
@@ -94,7 +92,7 @@ divide() {
     local A_FULL
     local B_FULL
     local SUM_FULL
-    local TRIMEND
+    local TRIM_END
 
     [ -z "$DECIMALS" ] && DECIMALS="0"
 
@@ -108,9 +106,9 @@ divide() {
     printf -v SUM_FULL "%0${DECIMALS}d" $((A_FULL / B_FULL))
 
     # stripping and .adding this many digits: DECIMALS
-    printf -v TRIMEND "%*s" "$DECIMALS"
-    TRIMEND="${TRIMEND// /?}"
-    printf "%.${DECIMALS}f" "${SUM_FULL%$TRIMEND}.${SUM_FULL:(-${DECIMALS})}"
+    printf -v TRIM_END "%*s" "$DECIMALS"
+    TRIM_END="${TRIM_END// /?}"
+    printf "%.${DECIMALS}f" "${SUM_FULL%$TRIM_END}.${SUM_FULL:(-${DECIMALS})}"
 }
 
 # singleton echo
@@ -299,7 +297,7 @@ stress_cpu() {
     fi
 }
 
-# calculate an display averages
+# calculate and display averages
 stress_cpu_averages() {
     local -a HC_BENCHMARK=( 0 0 0 )
     local BMV
@@ -420,56 +418,57 @@ dnsquery() {
     # empty host
     [ -z "$HOST" ] && return 1
 
-    # last  record only, first may be a CNAME
+    # last record only, first may be a CNAME
     IP="$(LC_ALL=C host -t "$TYPE" "$HOST" 2> /dev/null | tail -n 1)"
-    if ! [ -z "$IP" ] && [ "$IP" = "${IP/ not found:/}" ] && [ "$IP" = "${IP/ has no /}" ]; then
-        case "$TYPE" in
-            A)
-                ANSWER="${IP#* has address }"
-                if grep -q "^\([0-9]\{1,3\}\.\)\{3\}[0-9]\{1,3\}\$" <<< "$ANSWER"; then
-                    echo "$ANSWER"
-                else
-                    # invalid IP
-                    return 2
-                fi
-            ;;
-            MX)
-                ANSWER="${IP#* mail is handled by *[0-9] }"
-                if grep -q "^[a-z0-9A-Z.-]\+\$" <<< "$ANSWER"; then
-                    echo "$ANSWER"
-                else
-                    # invalid hostname
-                    return 2
-                fi
-            ;;
-            PTR)
-                ANSWER="${IP#* domain name pointer }"
-                if grep -q "^[a-z0-9A-Z.-]\+\$" <<< "$ANSWER"; then
-                    echo "$ANSWER"
-                else
-                    # invalid hostname
-                    return 2
-                fi
-            ;;
-            TXT)
-                ANSWER="${IP#* domain name pointer }"
-                if grep -q "^[a-z0-9A-Z.-]\+\$" <<< "$ANSWER"; then
-                    echo "$ANSWER"
-                else
-                    # invalid hostname
-                    return 2
-                fi
-            ;;
-            *)
-                # invalid type
-                return 3
-            ;;
-        esac
-        return 0
-    else
-        # not found
+
+    # not found
+    if [ -z "$IP" ] || ! [ "$IP" = "${IP/ not found:/}" ] || ! [ "$IP" = "${IP/ has no /}" ]; then
         return 4
     fi
+
+    case "$TYPE" in
+        A)
+            ANSWER="${IP#* has address }"
+            if grep -q "^\([0-9]\{1,3\}\.\)\{3\}[0-9]\{1,3\}\$" <<< "$ANSWER"; then
+                echo "$ANSWER"
+            else
+                # invalid IP
+                return 2
+            fi
+        ;;
+        MX)
+            ANSWER="${IP#* mail is handled by *[0-9] }"
+            if grep -q "^[a-z0-9A-Z.-]\+\$" <<< "$ANSWER"; then
+                echo "$ANSWER"
+            else
+                # invalid hostname
+                return 2
+            fi
+        ;;
+        PTR)
+            ANSWER="${IP#* domain name pointer }"
+            if grep -q "^[a-z0-9A-Z.-]\+\$" <<< "$ANSWER"; then
+                echo "$ANSWER"
+            else
+                # invalid hostname
+                return 2
+            fi
+        ;;
+        TXT)
+            ANSWER="${IP#* domain name pointer }"
+            if grep -q "^[a-z0-9A-Z.-]\+\$" <<< "$ANSWER"; then
+                echo "$ANSWER"
+            else
+                # invalid hostname
+                return 2
+            fi
+        ;;
+        *)
+            # unknown type
+            return 3
+        ;;
+    esac
+    return 0
 }
 
 ## check SSL certificate with openssl
