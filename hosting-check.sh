@@ -479,7 +479,7 @@ ssl_check() {
     local SSL_ARGS="$3"
     local NOCERT_REGEX='[A-Za-z0-9+/=]\{64\}'
 
-    notice "${SSL_NAME}:  echo QUIT|openssl s_client -CAfile '${HC_CABUNDLE}' -connect ${HC_FTP_HOST}:${SSL_PORT} ${SSL_ARGS}|grep -v '${NOCERT_REGEX}'"
+    notice "${SSL_NAME}:  echo QUIT|openssl s_client -CAfile '${HC_CABUNDLE}' -crlf -connect ${HC_FTP_HOST}:${SSL_PORT} ${SSL_ARGS}|grep -v '${NOCERT_REGEX}'"
 }
 
 
