@@ -1,20 +1,24 @@
 #!/bin/bash
-
-# Hosting (webspace) checker
-
-# Depends:  apt-get install lftp bind9-host whois
-# Depends2: apt-get install curl bind9-host whois
-# Extra:    pip install ansi2html
-# Version:  0.3
-# Author:   Viktor Szépe <viktor@szepe.net>
-# URL:      https://github.com/szepeviktor/hosting-check
-
-## SETTINGS
-#  ========
 #
-## URL with trailing slash
+# Hosting (webspace) checker
+#
+# VERSION       :0.3
+# DATE          :2014-09-02
+# AUTHOR        :Viktor Szépe <viktor@szepe.net>
+# LICENSE       :The MIT License (MIT)
+# URL           :https://github.com/szepeviktor/hosting-check
+# DEPENDS       :apt-get install lftp bind9-host whois
+# DEPENDS2      :apt-get install curl bind9-host whois
+# EXTRA         :pip install ansi2html
+# BASH-VERSION  :4.2+
+
+
+# SETTINGS
+# ========
+#
+# URL with trailing slash
 HC_SITE="http://SITE.URL/"
-## FTP access
+# FTP access
 HC_FTP_HOST="FTPHOST"
 HC_FTP_PORT="21"
 HC_FTP_WEBROOT="/public_html"
@@ -41,10 +45,10 @@ HC_CABUNDLE="/etc/ssl/certs/ca-certificates.crt"
 HC_BENCHMARK_VALUES="$(mktemp)"
 HC_LOCK="$(mktemp)"
 HC_PROTOCOL="ftp://"
-## curl or lftp
+# curl or lftp
 HC_CURL="1"
 which lftp &> /dev/null && HC_CURL="0"
-## for printf decimals
+# for printf decimals
 export LC_NUMERIC=C
 
 # prepare as multiplied integer without decimal point
