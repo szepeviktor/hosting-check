@@ -1,5 +1,5 @@
-# from h5bp - https://github.com/h5bp/html5-boilerplate
-
+# BEGIN h5bp
+# https://github.com/h5bp/server-configs
 <IfModule mod_mime.c>
 
   # Audio
@@ -163,7 +163,9 @@ FileETag None
 
 </IfModule>
 
-# WordPress
+# END h5bp
+
+# BEGIN WordPress
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
@@ -172,3 +174,5 @@ FileETag None
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule . /index.php [L]
 </IfModule>
+
+# END WordPress
