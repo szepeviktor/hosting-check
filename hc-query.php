@@ -33,6 +33,7 @@ define( 'FS_METHOD', 'direct' );
 define( 'FS_CHMOD_DIR', (0775 & ~ umask()) );
 define( 'FS_CHMOD_FILE', (0664 & ~ umask()) );
 */
+define( 'WP_MEMORY_LIMIT', '96M' );
 //define( 'WP_MAX_MEMORY_LIMIT', '255M' );
 define( 'WP_USE_EXT_MYSQL', false );
 define( 'WP_POST_REVISIONS', 10 );
