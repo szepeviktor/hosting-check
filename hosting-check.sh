@@ -166,7 +166,7 @@ generate() {
         fatal "hc directory creation failure"
     fi
 
-    echo -n "hc" > "${UNPACKDIR}/${HC_DIR}ping.html"
+    echo -n "hc" > "${UNPACKDIR}/${HC_DIR}alive.html"
 
     cat << CSS > "${UNPACKDIR}/${HC_DIR}text-css.css"
 html {
@@ -433,6 +433,7 @@ dnsquery() {
     case "$TYPE" in
         A)
             ANSWER="${IP#* has address }"
+            ANSWER="${IP#* has IPv4 address }"
             if grep -q "^\([0-9]\{1,3\}\.\)\{3\}[0-9]\{1,3\}\$" <<< "$ANSWER"; then
                 echo "$ANSWER"
             else
@@ -445,12 +446,13 @@ dnsquery() {
             if grep -q "^[a-z0-9A-Z.-]\+\$" <<< "$ANSWER"; then
                 echo "$ANSWER"
             else
-                # invalid hostname
+                # invalid mail exchanger
                 return 2
             fi
         ;;
         PTR)
             ANSWER="${IP#* domain name pointer }"
+            ANSWER="${IP#* points to }"
             if grep -q "^[a-z0-9A-Z.-]\+\$" <<< "$ANSWER"; then
                 echo "$ANSWER"
             else
@@ -459,11 +461,11 @@ dnsquery() {
             fi
         ;;
         TXT)
-            ANSWER="${IP#* domain name pointer }"
+            ANSWER="${IP#* descriptive text }"
             if grep -q "^[a-z0-9A-Z.-]\+\$" <<< "$ANSWER"; then
                 echo "$ANSWER"
             else
-                # invalid hostname
+                # invalid descriptive text
                 return 2
             fi
         ;;
@@ -520,7 +522,9 @@ dns_servers() {
     NS1="$(head -n1 <<< "$NSS")"
     NS2="$(head -n2 <<< "$NSS" | tail -n +2)"
     NS1="${NS1#* name server }"
+    NS1="${NS1#* nameserver is }"
     NS2="${NS2#* name server }"
+    NS2="${NS2#* nameserver is }"
     log_vars "NS1" "$NS1"
     log_vars "NS2" "$NS2"
 
@@ -561,6 +565,7 @@ dns_servers() {
     notice "check DNS:  http://dnscheck.pingdom.com/?domain=${HC_DOMAIN}"
     notice "check DNS:  http://www.dnsinspect.com/${HC_DOMAIN}"
     notice "check DNS:  http://intodns.com/${HC_DOMAIN}"
+    notice "check DNS:  http://www.solvedns.com/${HC_DOMAIN}"
 }
 
 ## DNS mail exchangers
@@ -1211,7 +1216,7 @@ ftp_upload() {
 ftp_ping() {
     local PING
 
-    PING="$(wget_def -qO- --tries=1 --timeout=5 --max-redirect=0 "${HC_SITE}${HC_DIR}ping.html" | tr -c -d '[[:print:]]')"
+    PING="$(wget_def -qO- --tries=1 --timeout=5 --max-redirect=0 "${HC_SITE}${HC_DIR}alive.html" | tr -c -d '[[:print:]]')"
 
     if [ "$PING" = hc ]; then
         notice "uploaded files are available"
