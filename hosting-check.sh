@@ -717,7 +717,7 @@ keep_alive() {
 }
 
 
-## create list:  wget -qO- https://github.com/h5bp/html5-boilerplate/raw/master/.htaccess \
+## create list:  wget -qO- https://github.com/h5bp/server-configs-apache/blob/master/dist/.htaccess \
 ##     | grep AddType | sed 's/^.*AddType\s*\([^ ]*\)\s*\(.*\)$/\1 \2/'
 mime_type() {
     local ARG="$1"
@@ -777,7 +777,7 @@ mime_type() {
             error "INCORRECT MIME type for ${MTYPE}"
         fi
     done
-    notice "Apache settings:  https://github.com/h5bp/html5-boilerplate/raw/master/.htaccess"
+    notice "Apache settings:  https://github.com/h5bp/server-configs-apache/blob/master/dist/.htaccess"
 }
 
 ## gzip compression
@@ -789,7 +789,7 @@ content_compression() {
         msg "gzip compression OK"
     else
         error "NO gzip compression"
-        notice "Apache settings:  https://github.com/h5bp/html5-boilerplate/raw/master/.htaccess"
+        notice "Apache settings:  https://github.com/h5bp/server-configs-apache/blob/master/dist/.htaccess"
     fi
 }
 
@@ -802,7 +802,7 @@ content_cache() {
         msg "cache control header OK"
     else
         error "NO cache control header"
-        notice "Apache settings:  https://github.com/h5bp/html5-boilerplate/raw/master/.htaccess"
+        notice "Apache settings:  https://github.com/h5bp/server-configs-apache/blob/master/dist/.htaccess"
     fi
 }
 

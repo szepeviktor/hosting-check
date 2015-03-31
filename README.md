@@ -1,10 +1,10 @@
 Hosting checker
 ===============
 
-Shared hosting service (webspace) checker based on my personal demands
+Shared hosting service (webspace) checker based on my personal demands.
 
-This **shell script** runs on your terminal (Linux, Cygwin, OS X) and checks any FTP/PHP/MySQL hosting service/webspace
-by uploading PHP code and downloading its output. No SSH access is needed for the hosting service, it runs on a separate terminal.
+This **shell script** runs on your terminal (Linux, Windows/Cygwin, OS X) and checks any FTP/PHP/MySQL hosting service/webspace
+by uploading PHP code and downloading its output. No SSH access is needed for the hosting service, it runs on your own terminal.
 
 #### You can use it to
 
@@ -12,6 +12,7 @@ by uploading PHP code and downloading its output. No SSH access is needed for th
 - fix errors in an existing site
 - prepare for traffic spikes
 - reduce spam
+- speed up a website
 
 ## Checks
 
@@ -48,25 +49,25 @@ by uploading PHP code and downloading its output. No SSH access is needed for th
 ## Output types
 
 - HTML with [clickable links](http://online1.hu/)
-- a <span style="color:orange;">coloured</span> text file for console
+- a <span style="color:orange;">coloured</span> text file for console (use `less -r` to view it)
 - Bash parsable key-value pairs
 
 ## Installation
 
-1. download: `git clone https://github.com/szepeviktor/hosting-check.git && cd hosting-check`
-1. install:  lftp (curl is not a full-featured fallback)
-1. settings: `./generate-rc.sh` will question you
-1. db vars:  you can have a WordPress installation (wp-config.php will be read)
-1. start:    `./hosting-check.sh`
+1. Install dependencies: lftp (curl is not a full-featured fallback) bind9-host whois, optionally `pip install ansi2html`.
+1. Download it: `git clone https://github.com/szepeviktor/hosting-check.git && cd hosting-check`.
+1. Autogenerate config file: `./generate-rc.sh`.
+1. If you have WordPress installed you don't have to set up database access, wp-config.php will be read instead.
+1. Start it: `./hosting-check.sh`.
 
-### Cygwin
+### Cygwin on Windows
 
 On Cygwin use [apt-cyg](https://github.com/transcode-open/apt-cyg) and install lftp beside ncurses,
 wget, bind-utils, util-linux and whois.
 
 `apt-cyg install  ncurses wget lftp bind-utils util-linux whois`
 
-To clone this GitHub repo you need
+To clone this GitHub repo you will need:
 
 `apt-cyg install  git libcurl4`
 
@@ -85,12 +86,11 @@ To clone this GitHub repo you need
 | lin             | 5.4 |  1.102 |   1.087 |  0.220 |
 | sh-os           | 5.5 |  0.805 |   0.605 |  0.133 |
 
-**steps** counts from 1 to 25 million, **shuffle** shuffles and calculates md5 sum of a string half million times,
-**AES** encrypts an md5 sum 2500 times. You can find the source in [hc-query.php](https://github.com/szepeviktor/hosting-check/blob/master/hc-query.php#L82-L117)
+**steps** increments a variable from 1 to 25 million, **shuffle** shuffles and calculates MD5 sum of a string half million times,
+**AES** encrypts an MD5 sum 2500 times. You can find the source in [hc-query.php](https://github.com/szepeviktor/hosting-check/blob/master/hc-query.php#L82-L117)
 
 Company names are hidden intentionally. Times are in seconds.
 
 ### Contribution
 
 You are more than welcome to test drive this script and attach the output in an [issue](https://github.com/szepeviktor/hosting-check/issues/new).
-
