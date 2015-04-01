@@ -433,7 +433,7 @@ dnsquery() {
     case "$TYPE" in
         A)
             ANSWER="${IP#* has address }"
-            ANSWER="${IP#* has IPv4 address }"
+            ANSWER="${ANSWER#* has IPv4 address }"
             if grep -q "^\([0-9]\{1,3\}\.\)\{3\}[0-9]\{1,3\}\$" <<< "$ANSWER"; then
                 echo "$ANSWER"
             else
@@ -452,7 +452,7 @@ dnsquery() {
         ;;
         PTR)
             ANSWER="${IP#* domain name pointer }"
-            ANSWER="${IP#* points to }"
+            ANSWER="${ANSWER#* points to }"
             if grep -q "^[a-z0-9A-Z.-]\+\$" <<< "$ANSWER"; then
                 echo "$ANSWER"
             else
