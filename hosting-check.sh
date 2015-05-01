@@ -405,6 +405,8 @@ static_download_multi() {
 
     # kill all jobs
     { jobs -p | xargs kill -9 ;} &> /dev/null
+    # overload may cause PHP to stop or to ban
+    sleep 10
     return 1
 }
 
@@ -829,7 +831,7 @@ php_version() {
     PHP_VERSION="$(php_query version)"
 
     # major * 100 + minor
-    if [ "$PHP_VERSION" -ge 504 ]; then
+    if [ "0${PHP_VERSION}" -ge 504 ]; then
         msg "PHP version OK (${PHP_VERSION})"
     else
         error "PHP 5.4 is twice as FAST (${PHP_VERSION})"
@@ -844,7 +846,7 @@ php_memory() {
 
     PHP_MEMORY="$(php_query memory)"
 
-    if [ "$PHP_MEMORY" -lt $((256 * 1024 * 1024)) ]; then
+    if [ "0${PHP_MEMORY}" -lt $((256 * 1024 * 1024)) ]; then
         error "LOW PHP memory limit (${PHP_MEMORY})"
         notice "ini_set('memory_limit', '256M');"
     else
@@ -859,7 +861,7 @@ php_exectime() {
 
     PHP_EXECTIME="$(php_query exectime)"
 
-    if [ "$PHP_EXECTIME" -ge 30 ]; then
+    if [ "0$PHP_EXECTIME" -ge 30 ]; then
         msg "PHP execution time limit OK (${PHP_EXECTIME})"
     else
         error "PHP needs at least 30 seconds (${PHP_EXECTIME})"
@@ -881,7 +883,7 @@ php_http() {
 
     PHP_HTTP="$(php_query http)"
 
-    if [ "$PHP_HTTP" = OK ]; then
+    if [ "$PHP_HTTP" = "OK" ]; then
         msg "PHP HTTP functions OK"
     else
         error "PHP can NOT download files"
@@ -894,7 +896,7 @@ php_safe() {
 
     PHP_SAFE="$(php_query safe)"
 
-    if [ "$PHP_SAFE" = OK ]; then
+    if [ "$PHP_SAFE" = "OK" ]; then
         msg "PHP Safe mode etc. OK"
     else
         error "PHP magic quotes || safe mode || register globals ON"

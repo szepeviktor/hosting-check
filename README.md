@@ -28,7 +28,7 @@ by uploading PHP code and downloading its output. No SSH access is needed for th
 - HTTP compression
 - HTTP Cache-Control header
 - concurrent HTTP connections
-- PHP version
+- PHP version [php-ng](https://wiki.php.net/phpng)
 - PHP memory limit
 - PHP excution time limit
 - PHP HTTP functions (for downloading)

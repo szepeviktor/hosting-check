@@ -4,5 +4,8 @@
 *.vars.log.html
 
 # rc
-.hcrc
+.hcrc*
 wp-config.php
+
+# lftp GnuTLS bug
+lftp*
