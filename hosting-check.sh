@@ -2,7 +2,7 @@
 #
 # Hosting (webspace) checker
 #
-# VERSION       :0.3
+# VERSION       :0.3.1
 # DATE          :2014-09-02
 # AUTHOR        :Viktor Szépe <viktor@szepe.net>
 # LICENSE       :The MIT License (MIT)
@@ -924,7 +924,7 @@ php_sapi() {
     PHP_SAPI="$(php_query sapi)"
 
     # complete pattern!
-    if grep -q "apache2handler\|cgi-fcgi\|fpm-fcgi" <<< "$PHP_SAPI"; then
+    if grep -q "apache2handler\|cgi-fcgi\|fpm-fcgi\|litespeed" <<< "$PHP_SAPI"; then
         msg "PHP Server API OK (${PHP_SAPI})"
     else
         error "UNKNOWN PHP Server API (${PHP_SAPI})"
